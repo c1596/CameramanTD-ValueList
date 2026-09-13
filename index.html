@@ -1946,972 +1946,95 @@
         let uploadedCrateBase64Image = "";
         let activePreviewDataUrl = "";
         let pendingConfirmResolver = null;
-        let activeCrateId = cratesList[0]?.id || "crate_hub_summon";
+let activeCrateId = cratesList[0]?.id || "crate_hub_summon";
         let isRouletteSpinning = false;
         let selectedWikiUnitId = catalogItems[0]?.id || 1;
         let activePickerMode = 'trade';
 
-        // ТОЛЬКО НАСТОЯЩИЕ ИГРОКИ В ЛЕНТЕ
-        let liveTickerEvents = [];
-        try {
-            const savedEvents = localStorage.getItem('ctd_real_drops_cache');
-            if (savedEvents) liveTickerEvents = JSON.parse(savedEvents);
-        } catch(e) {}
-
-        let upgraderState = {
-            sourceType: 'unit',
-            sourceUnit: null,
-            sourceVal: 0,
-            targetUnit: null,
-            winChance: 0,
-            isSpinning: false,
-            wheelAngle: 0,
-            bottomTab: 'inventory'
-        };
-
-        let firebaseApp = null, firebaseAuth = null, firestoreDb = null;
-
-        let audioCtx = null;
-        function getAudioContext() {
-            if (!audioCtx) {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                audioCtx = new AudioContext();
-            }
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            return audioCtx;
-        }
-
-        window.playAudioTick = function(freqMultiplier = 1) {
-            try {
-                const ctx = getAudioContext();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(360 * freqMultiplier, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.03);
-                gain.gain.setValueAtTime(0.18, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.032);
-            } catch(e) {}
-        };
-
-        window.playAudioWin = function() {
-            try {
-                const ctx = getAudioContext();
-                const notes = [523.25, 659.25, 783.99, 1046.50];
-                notes.forEach((freq, idx) => {
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.type = 'sine';
-                    const startTime = ctx.currentTime + idx * 0.085;
-                    osc.frequency.setValueAtTime(freq, startTime);
-                    gain.gain.setValueAtTime(0.22, startTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-                    osc.start(startTime);
-                    osc.stop(startTime + 0.36);
-                });
-            } catch(e) {}
-        };
-
-        window.playAudioLose = function() {
-            try {
-                const ctx = getAudioContext();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(240, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(60, ctx.currentTime + 0.35);
-                gain.gain.setValueAtTime(0.16, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.35);
-            } catch(e) {}
-        };
-
-        window.playAudioCoins = function() {
-            try {
-                const ctx = getAudioContext();
-                [987.77, 1318.51].forEach((freq, idx) => {
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.type = 'sine';
-                    const startTime = ctx.currentTime + idx * 0.07;
-                    osc.frequency.setValueAtTime(freq, startTime);
-                    gain.gain.setValueAtTime(0.2, startTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.22);
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-                    osc.start(startTime);
-                    osc.stop(startTime + 0.24);
-                });
-            } catch(e) {}
-        };
-
-        window.getUnitTradeValue = function(unit) {
-            if (!unit) return 0;
-            if (unit.isValNA) return 0;
-            const val = Number(unit.value);
-            return isNaN(val) || val < 0 ? 0 : val;
-        };
-
-        window.getUnitGameValue = function(unit) {
-            if (!unit) return 0;
-            if (unit.gameValue !== undefined && unit.gameValue !== null) {
-                const gVal = Number(unit.gameValue);
-                if (!isNaN(gVal) && gVal >= 0) return gVal;
-            }
-            return window.getUnitTradeValue(unit);
-        };
-
-        window.updateUserBalanceDisplay = function() {
-            localStorage.setItem('ctd_user_val_balance', userValBalance.toString());
-            const b1 = document.getElementById('headerUserBalance');
-            const b2 = document.getElementById('upgraderBalanceDisplay');
-            if (b1) b1.innerText = userValBalance.toLocaleString();
-            if (b2) b2.innerText = userValBalance.toLocaleString();
-            updateBailoutButtonStatus();
-        };
-
-        function updateBailoutButtonStatus() {
-            const btn = document.getElementById('bailoutBonusBtn');
-            const textEl = document.getElementById('bailoutBtnText');
-            if (!btn || !textEl) return;
-
-            const now = Date.now();
-            const cooldownMs = (adminSettings.bonusCooldown || 60) * 1000;
-            const elapsed = now - lastBailoutClaimTime;
-
-            if (elapsed < cooldownMs) {
-                const remainingSec = Math.ceil((cooldownMs - elapsed) / 1000);
-                btn.disabled = true;
-                btn.classList.add('opacity-50', 'cursor-not-allowed');
-                textEl.innerText = currentLang === 'ru' ? `Ждите ${remainingSec}с` : `Wait ${remainingSec}s`;
-            } else if (userValBalance >= (adminSettings.bonusThreshold || 50)) {
-                btn.disabled = false;
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
-                textEl.innerText = `+${adminSettings.bonusAmount || 10} Val (${currentLang === 'ru' ? 'Баланс полон' : 'Balance full'})`;
-            } else {
-                btn.disabled = false;
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
-                textEl.innerText = `+${adminSettings.bonusAmount || 10} Val`;
-            }
-        }
-
-        setInterval(updateBailoutButtonStatus, 1000);
-
-        window.claimBailoutBonus = function() {
-            const now = Date.now();
-            const cooldownMs = (adminSettings.bonusCooldown || 60) * 1000;
-            const elapsed = now - lastBailoutClaimTime;
-
-            if (elapsed < cooldownMs) {
-                const remainingSec = Math.ceil((cooldownMs - elapsed) / 1000);
-                return showToast(currentLang === 'ru' ? `Бонус перезаряжается! Подождите ${remainingSec} сек.` : `Bonus cooling down! Wait ${remainingSec}s`, 'warn');
-            }
-
-            if (userValBalance >= (adminSettings.bonusThreshold || 50)) {
-                return showToast(currentLang === 'ru' ? `Бонус помощи выдается только когда на балансе меньше ${adminSettings.bonusThreshold || 50} Val!` : `Assistance bonus is only given when balance is under ${adminSettings.bonusThreshold || 50} Val!`, 'warn');
-            }
-
-            lastBailoutClaimTime = now;
-            localStorage.setItem('ctd_last_bailout_time', now.toString());
-
-            const amount = adminSettings.bonusAmount || 10;
-            userValBalance += amount;
-            updateUserBalanceDisplay();
-            playAudioCoins();
-            showToast(currentLang === 'ru' ? `🎁 Получено +${amount} Val помощи!` : `🎁 Claimed +${amount} Val assistance bonus!`, 'success');
-        };
-
-        window.renderLiveTicker = function() {
-            const track = document.getElementById('liveTickerTrack');
-            if (!track) return;
-
-            if (liveTickerEvents.length === 0) {
-                track.innerHTML = `
-                    <div class="inline-flex items-center gap-2 px-3 py-1 text-slate-400 font-mono text-[11px]">
-                        <span>🟢</span> <span>${currentLang === 'ru' ? 'Лента реальных дропов активна. Открывайте кейсы или крутите апгрейдер!' : 'Live real drops feed active. Open crates or roll the upgrader!'}</span>
-                    </div>
-                `;
-                return;
-            }
-
-            const itemsToRender = [...liveTickerEvents, ...liveTickerEvents];
-            track.innerHTML = itemsToRender.map(ev => {
-                const isCrate = ev.type === 'crate';
-                const actionText = currentLang === 'ru' ? (isCrate ? 'выбил' : 'поднял') : (isCrate ? 'unboxed' : 'upgraded to');
-                return `
-                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl shadow-sm" style="background-color: var(--ticker-item-bg); border: 1px solid var(--ticker-border);">
-                        <span class="font-bold text-white tracking-wide">${ev.user}</span>
-                        <span class="text-slate-400">${actionText}</span>
-                        <span class="font-black text-rarity-${ev.rarity}">${ev.unitName}</span>
-                        <span class="text-[9px] px-1.5 py-0.5 rounded bg-black/60 border border-white/10 text-slate-300 font-mono">${ev.detail}</span>
-                    </div>
-                `;
-            }).join('');
-        };
-
-        window.addLiveTickerEvent = async function(eventObj) {
-            liveTickerEvents.unshift(eventObj);
-            if (liveTickerEvents.length > 25) liveTickerEvents.pop();
-            localStorage.setItem('ctd_real_drops_cache', JSON.stringify(liveTickerEvents));
-            renderLiveTicker();
-
-            if (firestoreDb) {
-                try {
-                    await setDoc(doc(firestoreDb, "cameraman_td", "live_drops"), {
-                        events: liveTickerEvents.slice(0, 15),
-                        timestamp: Date.now()
-                    });
-                } catch(e) {}
-            }
-        };
-
-        window.clearLiveTickerDrops = function() {
-            liveTickerEvents = [];
-            localStorage.removeItem('ctd_real_drops_cache');
-            renderLiveTicker();
-            if (firestoreDb) {
-                setDoc(doc(firestoreDb, "cameraman_td", "live_drops"), { events: [], timestamp: Date.now() }).catch(()=>{});
-            }
-            showToast(currentLang === 'ru' ? 'История дропов очищена' : 'Drop history cleared', 'info');
-        };
-
-        window.openUserAuthModal = function() {
-            const modal = document.getElementById('userAuthModal');
-            const nickInput = document.getElementById('userAuthNickInput');
-            if (nickInput) nickInput.value = currentUserNick;
-            modal?.classList.remove('hidden');
-        };
-
-        window.closeUserAuthModal = function() {
-            document.getElementById('userAuthModal')?.classList.add('hidden');
-        };
-
-        window.savePlayerAccount = function() {
-            const nickInput = document.getElementById('userAuthNickInput');
-            const nick = (nickInput ? nickInput.value : '').trim();
-            if (!nick) return showToast(currentLang === 'ru' ? 'Введите ваш никнейм!' : 'Enter your nickname!', 'warn');
-
-            currentUserNick = nick;
-            localStorage.setItem('ctd_user_nick', currentUserNick);
-            updatePlayerAccountUi();
-            closeUserAuthModal();
-            showToast(currentLang === 'ru' ? `Профиль обновлен: ${currentUserNick}` : `Profile updated: ${currentUserNick}`, 'success');
-        };
-
-        function updatePlayerAccountUi() {
-            const nickEl = document.getElementById('headerUserNick');
-            if (nickEl) nickEl.innerText = currentUserNick;
-            const adminTargetNick = document.getElementById('adminTargetPlayerNick');
-            if (adminTargetNick) adminTargetNick.innerText = currentUserNick;
-        }
-
-        const availableThemes = ['dark', 'light', 'cameraman', 'speakerman', 'tvman', 'skibidi', 'agent'];
-
-        window.setTheme = function(themeName) {
-            if (!availableThemes.includes(themeName)) themeName = 'dark';
-            currentTheme = themeName;
-            localStorage.setItem('ctd_theme', themeName);
-            document.body.classList.remove(...availableThemes.map(t => `theme-${t}`));
-            document.body.classList.add(`theme-${themeName}`);
-            const select = document.getElementById('headerThemeSelect');
-            if (select) select.value = themeName;
-            renderLiveTicker();
-        };
-
-        const i18nDict = {
-            ru: {
-                nav_home: 'Главная',
-                nav_menu: 'Меню',
-                balance_label: 'Игровой Val:',
-                ticker_live_badge: 'ДРОПЫ ОНЛАЙН',
-                hub_badge: 'Главный портал Cameraman TD',
-                hub_title: 'Каталог ценностей, трейды, апгрейдер и боевая Википедия',
-                hub_subtitle: 'Официальные котировки персонажей, W/F/L калькулятор, колесо апгрейдов с игровым балансом, авторские кейсы, боевые характеристики, тир-лист и история цен.',
-                hub_all_sections_title: 'Все разделы хаба:',
-                menu_hub_main: 'Главное меню (Hub)',
-                sub_hub: 'Стартовая страница портала',
-                menu_valuelist: 'Value List',
-                sub_valuelist: 'Цены и тренды',
-                menu_calc: 'Калькулятор',
-                sub_calc: 'W / F / L трейды',
-                menu_upgrader: 'Апгрейдер',
-                sub_upgrader: 'Колесо фортуны',
-                menu_crates: 'Кейсы',
-                sub_crates: 'Спины и дропы',
-                menu_wiki: 'Википедия',
-                sub_wiki: 'Таблицы DPS',
-                menu_inventory: 'Инвентарь',
-                sub_inventory: 'Коллекция & Продажа',
-                menu_tierlist: 'Тир-Лист',
-                sub_tierlist: 'Ранги и HD экспорт',
-                menu_history: 'История цен',
-                sub_history: 'Журнал трендов',
-                home_featured_crates: 'Доступные кейсы',
-                view_all_crates: 'Все кейсы ➔',
-                home_featured_units: 'Топ персонажей в каталоге ценностей',
-                view_full_catalog: 'Полный список (Value List) ➔',
-                home_featured_tier: 'Тир-Лист персонажей (Top Ranks)',
-                view_full_tier: 'Открыть полный тир-лист ➔',
-                search_placeholder: 'Поиск юнита по названию...',
-                sort_val_desc: 'Ценность: Сначала дорогие',
-                sort_val_asc: 'Ценность: Сначала дешевые',
-                sort_game_desc: 'Игровой Val: Сначала дорогие',
-                sort_dem_desc: 'Спрос: Самый высокий',
-                sort_name_asc: 'По названию (A - Z)',
-                reset_btn: 'Сбросить',
-                rarity_label: 'Редкость:',
-                rarity_all: 'Все',
-                calc_title: 'Калькулятор обмена (W / F / L)',
-                calc_subtitle: 'Использует официальный Trade Value персонажей',
-                calc_slots_label: 'Слоты:',
-                calc_swap: 'Поменять',
-                calc_to_fair: 'До FAIR',
-                calc_share: 'Поделиться',
-                verdict_header: 'Вердикт сделки:',
-                verdict_add_units: 'Добавьте юнитов для расчета',
-                you_gives: 'Ты отдаешь (You)',
-                they_gives: 'Они отдают (Them)',
-                total_value: 'Всего Trade Value:',
-                clear_side: 'Очистить сторону',
-                crates_title: 'Симулятор кейсов & Спинов',
-                crates_sub: 'Реалистичная рулетка: полоска останавливается в случайной позиции карточки!',
-                crate_spin_btn: 'Открыть кейс!',
-                crates_available: 'Созданные кейсы:',
-                choose_crate: 'Выберите кейс',
-                to_inventory_badge: 'В инвентарь 🎒',
-                crate_create_btn: 'Создать кейс',
-                crate_drop_chances_label: 'Шансы выпадения предметов:',
-                congrats_won_label: 'Поздравляем! Вы получили:',
-                added_to_collection_msg: 'Автоматически добавлено в коллекцию 🎒',
-                wiki_title: 'Боевая Википедия (Характеристики и Прокачка)',
-                wiki_sub: 'Уровни прокачки, урон, радиус, кулдаун, дельты и авто-расчет DPS',
-                search_wiki_ph: 'Поиск персонажа в Вики...',
-                wiki_choose_unit: 'Выберите персонажа для просмотра:',
-                tier_title: 'Рейтинговый Тир-Лист персонажей',
-                tier_subtitle: 'Кликните на юнита для выбора ранга или перетащите мышкой',
-                tier_reset: 'Сбросить',
-                tier_download: 'Скачать HD PNG',
-                tier_pool: 'Пул персонажей:',
-                search_pool_ph: 'Поиск в пуле...',
-                inv_title: 'Мой инвентарь & Net Worth',
-                inv_subtitle: 'Юнитов можно продавать за Игровой Value для использования в кейсах и апгрейдере!',
-                inv_clear_all: 'Очистить всё',
-                inv_total_networth: 'Общий Net Worth (Trade):',
-                inv_total_gameworth: 'Стоимость в игре (Game Val):',
-                inv_total_items: 'Всего предметов:',
-                inv_avg_demand: 'Средний спрос:',
-                search_inv_ph: 'Поиск в коллекции...',
-                inv_sort_game_desc: 'По игровой цене: Сначала дорогие',
-                inv_sort_val_desc: 'По стоимости: Сначала дорогие',
-                inv_sort_val_asc: 'По стоимости: Сначала дешевые',
-                inv_sort_qty_desc: 'По количеству',
-                inv_sort_name_asc: 'По имени (A — Z)',
-                history_title: 'История изменений цен и трендов',
-                history_subtitle: 'Официальный журнал ценности персонажей (Trade Value & Game Value)',
-                admin_panel_title: 'Панель Главного Администратора',
-                admin_panel_sub: 'Управление 2 Value (Trade / Game), экономикой, кейсами, балансом игроков, Discord и Firestore',
-                admin_create_unit: 'Создать юнита',
-                admin_logout: 'Выйти',
-                admin_tab_economy: '💰 Настройки экономики & 2 Value',
-                admin_tab_units: '📹 Каталог персонажей (Цены)',
-                admin_tab_crates: '📦 Управление кейсами',
-                admin_tab_integrations: '☁️ База данных & Discord',
-                admin_eco_bonus_title: 'Параметры помощи (Бонус +10 Val)',
-                admin_bonus_amount_lbl: 'Сумма бонуса (Val):',
-                admin_bonus_cd_lbl: 'Кулдаун получения бонуса (секунд):',
-                admin_bonus_thresh_lbl: 'Порог баланса для выдачи бонуса:',
-                admin_sell_pct_lbl: 'Процент возврата монет при продаже юнита (%):',
-                save_economy_btn: 'Сохранить параметры экономики',
-                admin_player_balance_title: 'Управление балансом текущего игрока',
-                player_label: 'Игрок:',
-                admin_set_exact_balance_lbl: 'Установить точный баланс (Val):',
-                admin_set_balance_btn: 'Задать баланс',
-                admin_zero_balance_btn: 'Обнулить баланс',
-                table_unit: 'Персонаж',
-                table_rarity: 'Редкость',
-                table_trade_val: 'Trade Value',
-                table_game_val: 'Игровой Val',
-                table_demand: 'Спрос',
-                table_actions: 'Действия',
-                admin_all_crates_title: 'Все созданные кейсы:',
-                admin_new_crate_btn: '+ Новый кейс',
-                discord_sub: 'Автоматические уведомления при изменениях параметров цен и каталога',
-                save_webhook_btn: 'Сохранить Webhook',
-                test_btn: '🔔 Тест',
-                save_key_btn: 'Сохранить ключ',
-                write_firestore_btn: 'Записать всю базу в Firestore',
-                check_read_btn: 'Проверить чтение из Cloud',
-                clear_drops_btn: 'Очистить историю дропов',
-                stat_total_items: 'Всего предметов:',
-                stat_total_trade_val: 'Суммарный Trade Val:',
-                stat_total_game_val: 'Суммарный Game Val:',
-                stat_export_base: 'Экспорт базы:',
-                import_btn: 'Импорт',
-                reset_db_title: 'Сброс базы данных',
-                reset_db_sub: 'Сбросит каталог до стандартного набора юнитов',
-                reset_db_btn: 'Сбросить базу',
-                menu_title: 'Все разделы и настройки',
-                menu_close: 'Закрыть меню',
-                user_profile_title: 'Профиль игрока',
-                user_profile_desc: 'Ваш никнейм будет отображаться в Живой ленте дропов:',
-                user_nick_ph: 'Ваш игровой никнейм...',
-                cancel_btn: 'Отмена',
-                save_btn: 'Сохранить',
-                add_unit_title: 'Добавить персонажа',
-                unit_name_lbl: 'Название персонажа:',
-                unit_name_ph: 'Например: Upgraded Titan Cameraman',
-                unit_category_lbl: 'Класс:',
-                trade_val_field_lbl: '1. Trade Value (Ценность):',
-                game_val_field_lbl: '2. Game Value (Игровой):',
-                game_val_desc: 'Для апгрейдера, кейсов и продажи',
-                demand_lbl: 'Спрос (от 1 до 10):',
-                trend_lbl: 'Тренд стоимости:',
-                place_limit_lbl: 'Лимит на карте (Place Limit):',
-                in_summon_lbl: 'Выпадает из саммона:',
-                not_specified_ph: 'Не указан',
-                img_url_or_file_lbl: 'Ссылка на фото или загрузка файла:',
-                save_to_db_btn: 'Сохранить в базу',
-                choose_unit_title: 'Выберите персонажа',
-                quick_search_ph: 'Быстрый поиск...',
-                create_crate_title: 'Создать авторский кейс (Crate)',
-                crate_name_lbl: 'Название ящика:',
-                crate_mode_lbl: 'Режим стоимости:',
-                crate_mode_paid: '💰 За Game Value (Идет в инвентарь)',
-                crate_mode_free: '🆓 Бесплатно (Тест удачи / Демо)',
-                crate_price_lbl: 'Цена в Game Value:',
-                crate_desc_lbl: 'Краткое описание:',
-                crate_img_lbl: 'Фото кейса (URL или загрузите изображение):',
-                crate_drops_lbl: 'Выпадающие юниты и шансы (%):',
-                save_crate_btn: 'Сохранить кейс',
-                add_wiki_level_title: 'Добавить уровень прокачки',
-                table_lvl: 'Номер уровня (УР.):',
-                table_cost: 'Стоимость прокачки (ЦЕНА):',
-                table_dmg: 'Урон (УРОН):',
-                table_cd: 'Кулдаун (КД, сек):',
-                table_range: 'Дальность (ДАЛЬНОСТЬ):',
-                dps_calc_label: 'Расчетный DPS:',
-                save_level_btn: 'Сохранить уровень',
-                img_ready_title: 'Изображение готово',
-                phone_save_tip: 'Для сохранения на телефоне: зажмите картинку пальцем на 1 секунду и нажмите «Сохранить фото».',
-                copy_buffer_btn: '📋 В буфер',
-                download_png_btn: '💾 Скачать (PNG)',
-                admin_login_title: 'Вход для Администратора',
-                admin_pass_prompt: 'Введите пароль главного администратора:',
-                password_ph: 'Пароль...',
-                login_btn: 'Войти',
-                confirm_title: 'Подтверждение',
-                confirm_yes_btn: 'Да, продолжить',
-                add_btn: 'Добавить',
-                edit_btn: '✏️ Изменить',
-                role_trader: 'Трейдер',
-                role_admin: 'Главный Админ',
-                upgrader_title: 'АПГРЕЙДЕР ЮНИТОВ',
-                upgrader_gameval_badge: 'ИГРОВОЙ VAL (ДЛЯ ИГРЫ)',
-                upgrader_sub: 'Поставьте персонажа или ставку монет, выберите цель и крутите колесо с реальным шансом!',
-                upg_slot_source_title: '1. Что ставишь (Твой юнит):',
-                click_to_pick_unit: 'Нажмите, чтобы выбрать юнит',
-                custom_val_bet_ph: 'Или ставка Val...',
-                win_chance_label: 'ШАНС ПОБЕДЫ',
-                upgrader_roll_btn: 'ПРОКАЧАТЬ',
-                upg_slot_target_title: '2. Цель (Что хочешь выиграть):',
-                click_to_pick_target: 'Нажмите, чтобы выбрать цель',
-                click_to_pick_catalog: 'Нажмите для выбора из каталога ➔',
-                tab_my_inventory: 'Мой Инвентарь',
-                tab_catalog_shop: 'Каталог целей & Магазин',
-                quick_search_unit_ph: 'Быстрый поиск персонажа...'
-            },
-            en: {
-                nav_home: 'Home',
-                nav_menu: 'Menu',
-                balance_label: 'Game Val:',
-                ticker_live_badge: 'LIVE DROPS',
-                hub_badge: 'Cameraman TD Main Hub',
-                hub_title: 'Value List, Trade Calculator, Upgrader & Wiki',
-                hub_subtitle: 'Official unit values, W/F/L trade evaluator, custom wheel upgrader, admin crates, combat stats, tier list and price history.',
-                hub_all_sections_title: 'All Hub Sections:',
-                menu_hub_main: 'Main Menu (Hub)',
-                sub_hub: 'Portal start page',
-                menu_valuelist: 'Value List',
-                sub_valuelist: 'Prices & Trends',
-                menu_calc: 'Calculator',
-                sub_calc: 'W / F / L Trades',
-                menu_upgrader: 'Upgrader',
-                sub_upgrader: 'Fortune Wheel',
-                menu_crates: 'Crates',
-                sub_crates: 'Spins & Drops',
-                menu_wiki: 'Wiki',
-                sub_wiki: 'DPS Tables',
-                menu_inventory: 'Inventory',
-                sub_inventory: 'Collection & Sell',
-                menu_tierlist: 'Tier List',
-                sub_tierlist: 'Ranks & HD Export',
-                menu_history: 'Price History',
-                sub_history: 'Trend Changelog',
-                home_featured_crates: 'Available Crates',
-                view_all_crates: 'All Crates ➔',
-                home_featured_units: 'Top Characters in Value List',
-                view_full_catalog: 'Full List (Value List) ➔',
-                home_featured_tier: 'Character Tier List (Top Ranks)',
-                view_full_tier: 'Open Full Tier List ➔',
-                search_placeholder: 'Search unit by name...',
-                sort_val_desc: 'Value: High to Low',
-                sort_val_asc: 'Value: Low to High',
-                sort_game_desc: 'Game Val: High to Low',
-                sort_dem_desc: 'Demand: Highest first',
-                sort_name_asc: 'By Name (A - Z)',
-                reset_btn: 'Reset',
-                rarity_label: 'Rarity:',
-                rarity_all: 'All',
-                calc_title: 'Trade Calculator (W / F / L)',
-                calc_subtitle: 'Uses official unit Trade Values',
-                calc_slots_label: 'Slots:',
-                calc_swap: 'Swap',
-                calc_to_fair: 'To FAIR',
-                calc_share: 'Share',
-                verdict_header: 'Trade Verdict:',
-                verdict_add_units: 'Add units to calculate',
-                you_gives: 'You Give',
-                they_gives: 'They Give',
-                total_value: 'Total Trade Value:',
-                clear_side: 'Clear Side',
-                crates_title: 'Crates & Spins Simulator',
-                crates_sub: 'Realistic roulette: indicator stops at a randomized card position!',
-                crate_spin_btn: 'Open Crate!',
-                crates_available: 'Available Crates:',
-                choose_crate: 'Select a crate',
-                to_inventory_badge: 'To Inventory 🎒',
-                crate_create_btn: 'Create Crate',
-                crate_drop_chances_label: 'Item drop chances:',
-                congrats_won_label: 'Congratulations! You unboxed:',
-                added_to_collection_msg: 'Automatically added to inventory 🎒',
-                wiki_title: 'Combat Wiki (Stats & Upgrades)',
-                wiki_sub: 'Upgrade levels, damage, cooldown, range, deltas, and auto-computed DPS',
-                search_wiki_ph: 'Search unit in Wiki...',
-                wiki_choose_unit: 'Select a unit to inspect:',
-                tier_title: 'Community Tier List',
-                tier_subtitle: 'Click unit to assign rank or drag with mouse',
-                tier_reset: 'Reset',
-                tier_download: 'Download HD PNG',
-                tier_pool: 'Units Pool:',
-                search_pool_ph: 'Search in pool...',
-                inv_title: 'My Inventory & Net Worth',
-                inv_subtitle: 'Units can be sold for in-game Game Val to use in crates and upgrader!',
-                inv_clear_all: 'Clear All',
-                inv_total_networth: 'Total Net Worth (Trade):',
-                inv_total_gameworth: 'In-Game Worth (Game Val):',
-                inv_total_items: 'Total Items:',
-                inv_avg_demand: 'Average Demand:',
-                search_inv_ph: 'Search in inventory...',
-                inv_sort_game_desc: 'By Game Val: High to Low',
-                inv_sort_val_desc: 'By Value: High to Low',
-                inv_sort_val_asc: 'By Value: Low to High',
-                inv_sort_qty_desc: 'By Quantity',
-                inv_sort_name_asc: 'By Name (A — Z)',
-                history_title: 'Price & Trend Change History',
-                history_subtitle: 'Official real-time changelog of Trade and Game Values',
-                admin_panel_title: 'Master Administrator Panel',
-                admin_panel_sub: 'Full control over 2 Values, economy, crates, player balances, Discord, and Firestore',
-                admin_create_unit: 'Create Unit',
-                admin_logout: 'Logout',
-                admin_tab_economy: '💰 Economy & 2 Value Settings',
-                admin_tab_units: '📹 Units Catalog (Prices)',
-                admin_tab_crates: '📦 Manage Crates',
-                admin_tab_integrations: '☁️ Database & Discord',
-                admin_eco_bonus_title: 'Assistance Parameters (+10 Val Bonus)',
-                admin_bonus_amount_lbl: 'Bonus amount (Val):',
-                admin_bonus_cd_lbl: 'Bonus cooldown (seconds):',
-                admin_bonus_thresh_lbl: 'Balance threshold for bonus:',
-                admin_sell_pct_lbl: 'Coin return percentage when selling (%):',
-                save_economy_btn: 'Save Economy Settings',
-                admin_player_balance_title: 'Manage Current Player Balance',
-                player_label: 'Player:',
-                admin_set_exact_balance_lbl: 'Set exact balance (Val):',
-                admin_set_balance_btn: 'Set Balance',
-                admin_zero_balance_btn: 'Reset Balance to 0',
-                table_unit: 'Character',
-                table_rarity: 'Rarity',
-                table_trade_val: 'Trade Value',
-                table_game_val: 'Game Val',
-                table_demand: 'Demand',
-                table_actions: 'Actions',
-                admin_all_crates_title: 'All created crates:',
-                admin_new_crate_btn: '+ New Crate',
-                discord_sub: 'Automatic alerts on value, demand, and catalog updates',
-                save_webhook_btn: 'Save Webhook',
-                test_btn: '🔔 Test',
-                save_key_btn: 'Save Key',
-                write_firestore_btn: 'Write Database to Firestore',
-                check_read_btn: 'Check Cloud Read',
-                clear_drops_btn: 'Clear Drops History',
-                stat_total_items: 'Total Items:',
-                stat_total_trade_val: 'Total Trade Val:',
-                stat_total_game_val: 'Total Game Val:',
-                stat_export_base: 'Database Export:',
-                import_btn: 'Import',
-                reset_db_title: 'Reset Database',
-                reset_db_sub: 'Resets catalog to default units',
-                reset_db_btn: 'Reset Base',
-                menu_title: 'All Sections & Settings',
-                menu_close: 'Close Menu',
-                user_profile_title: 'Player Profile',
-                user_profile_desc: 'Your nickname will appear in the Live Drops ticker:',
-                user_nick_ph: 'Your in-game nickname...',
-                cancel_btn: 'Cancel',
-                save_btn: 'Save',
-                add_unit_title: 'Add Character',
-                unit_name_lbl: 'Character Name:',
-                unit_name_ph: 'e.g.: Upgraded Titan Cameraman',
-                unit_category_lbl: 'Category:',
-                trade_val_field_lbl: '1. Trade Value (Market):',
-                game_val_field_lbl: '2. Game Value (Gameplay):',
-                game_val_desc: 'For upgrader, crates and selling',
-                demand_lbl: 'Demand (1 to 10):',
-                trend_lbl: 'Value Trend:',
-                place_limit_lbl: 'Place Limit:',
-                in_summon_lbl: 'Drops from Summon:',
-                not_specified_ph: 'Not specified',
-                img_url_or_file_lbl: 'Image URL or file upload:',
-                save_to_db_btn: 'Save to Database',
-                choose_unit_title: 'Choose Character',
-                quick_search_ph: 'Quick search...',
-                create_crate_title: 'Create Custom Crate',
-                crate_name_lbl: 'Crate Name:',
-                crate_mode_lbl: 'Cost Mode:',
-                crate_mode_paid: '💰 For Game Value (Goes to inventory)',
-                crate_mode_free: '🆓 Free (Lucky Test / Demo)',
-                crate_price_lbl: 'Price in Game Value:',
-                crate_desc_lbl: 'Short Description:',
-                crate_img_lbl: 'Crate Photo (URL or upload):',
-                crate_drops_lbl: 'Drop Units & Chances (%):',
-                save_crate_btn: 'Save Crate',
-                add_wiki_level_title: 'Add Upgrade Level',
-                table_lvl: 'Level Number (LVL):',
-                table_cost: 'Upgrade Cost (COST):',
-                table_dmg: 'Damage (DMG):',
-                table_cd: 'Cooldown (CD, sec):',
-                table_range: 'Range (RANGE):',
-                dps_calc_label: 'Computed DPS:',
-                save_level_btn: 'Save Level',
-                img_ready_title: 'Image Ready',
-                phone_save_tip: 'To save on mobile: hold the image for 1 second and tap "Save Photo".',
-                copy_buffer_btn: '📋 Copy Buffer',
-                download_png_btn: '💾 Download (PNG)',
-                admin_login_title: 'Master Administrator Login',
-                admin_pass_prompt: 'Enter master administrator password:',
-                password_ph: 'Password...',
-                login_btn: 'Login',
-                confirm_title: 'Confirmation',
-                confirm_yes_btn: 'Yes, proceed',
-                add_btn: 'Add',
-                edit_btn: '✏️ Edit',
-                role_trader: 'Trader',
-                role_admin: 'Master Admin',
-                upgrader_title: 'UNIT UPGRADER',
-                upgrader_gameval_badge: 'GAME VAL (FOR GAMEPLAY)',
-                upgrader_sub: 'Bet a unit or coins, pick a target, and spin the wheel with real chances!',
-                upg_slot_source_title: '1. What you bet (Your Unit):',
-                click_to_pick_unit: 'Click to choose unit',
-                custom_val_bet_ph: 'Or Val bet...',
-                win_chance_label: 'WIN CHANCE',
-                upgrader_roll_btn: 'UPGRADE',
-                upg_slot_target_title: '2. Target (What you want to win):',
-                click_to_pick_target: 'Click to choose target',
-                click_to_pick_catalog: 'Click to choose from catalog ➔',
-                tab_my_inventory: 'My Inventory',
-                tab_catalog_shop: 'Target Catalog & Shop',
-                quick_search_unit_ph: 'Quick unit search...'
-            }
-        };
-
-        window.toggleLanguage = function() {
-            currentLang = currentLang === 'ru' ? 'en' : 'ru';
-            localStorage.setItem('ctd_lang', currentLang);
-            applyTranslations();
-            applyFilters();
-            renderTradeSlots();
-            renderInventory();
-            renderTierListBoard();
-            renderCratesView();
-            renderWikiList();
-            renderUpgraderBottomList();
-            renderHomeWidgets();
-            renderLiveTicker();
-            showToast(currentLang === 'ru' ? 'Язык: Русский' : 'Language: English', 'info');
-        };
-
-        window.applyTranslations = function() {
-            const isEn = currentLang === 'en';
-            const langFlag = document.getElementById('langFlag');
-            const langShort = document.getElementById('langShortLabel');
-            if (langFlag) langFlag.innerText = isEn ? '🇺🇸' : '🇷🇺';
-            if (langShort) langShort.innerText = isEn ? 'EN' : 'RU';
-
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (i18nDict[currentLang] && i18nDict[currentLang][key]) {
-                    el.innerText = i18nDict[currentLang][key];
-                }
-            });
-
-            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-                const key = el.getAttribute('data-i18n-placeholder');
-                if (i18nDict[currentLang] && i18nDict[currentLang][key]) {
-                    el.placeholder = i18nDict[currentLang][key];
-                }
-            });
-
-            updateAdminUi();
-        };
-
-        window.showToast = function(msg, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            if (!container) return;
-            const toast = document.createElement('div');
-            const bgColors = {
-                info: 'bg-blue-600 text-white border-blue-400',
-                success: 'bg-emerald-600 text-white border-emerald-400',
-                error: 'bg-rose-600 text-white border-rose-400',
-                warn: 'bg-amber-600 text-white border-amber-400'
-            };
-            toast.className = `px-4 py-2.5 rounded-xl border text-xs font-bold shadow-lg transition-all duration-300 opacity-0 translate-y-2 pointer-events-auto ${bgColors[type] || bgColors.info}`;
-            toast.innerText = msg;
-            container.appendChild(toast);
-            requestAnimationFrame(() => toast.classList.remove('opacity-0', 'translate-y-2'));
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-2');
-                setTimeout(() => toast.remove(), 250);
-            }, 2800);
-        };
-
-        window.customConfirm = function(title, message) {
+        // Сжатие любых загруженных изображений до компактного размера (5-10 КБ) для надежного сохранения в LocalStorage и Firestore
+        function compressDataUrl(dataUrl, maxW = 160, maxH = 160, quality = 0.82) {
             return new Promise((resolve) => {
-                pendingConfirmResolver = resolve;
-                const modal = document.getElementById('confirmActionModal');
-                document.getElementById('confirmActionTitle').innerText = title;
-                document.getElementById('confirmActionMessage').innerText = message;
-                if (modal) modal.classList.remove('hidden');
-            });
-        };
-
-        window.resolveCustomConfirm = function(val) {
-            document.getElementById('confirmActionModal')?.classList.add('hidden');
-            if (pendingConfirmResolver) {
-                pendingConfirmResolver(val);
-                pendingConfirmResolver = null;
-            }
-        };
-
-        window.updateAdminUi = function() {
-            const adminBtn = document.getElementById('menuAdminBtn');
-            const quickActions = document.getElementById('adminQuickActions');
-            const addCrateBtn = document.getElementById('adminAddCrateBtn');
-            const roleBadge = document.getElementById('roleBadge');
-            if (adminBtn) adminBtn.classList.toggle('hidden', !isMasterAdmin);
-            if (quickActions) quickActions.classList.toggle('hidden', !isMasterAdmin);
-            if (addCrateBtn) addCrateBtn.classList.toggle('hidden', !isMasterAdmin);
-            if (roleBadge) {
-                roleBadge.innerText = isMasterAdmin ? i18nDict[currentLang].role_admin : i18nDict[currentLang].role_trader;
-                roleBadge.className = isMasterAdmin
-                    ? 'text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                    : 'text-[9px] font-bold px-1.5 py-0.2 rounded bg-dark-800 text-slate-400 border border-dark-border';
-            }
-            updateDiscordBadge();
-            updatePlayerAccountUi();
-        };
-
-        window.handleLogoClick = function() {
-            secretClicksCounter++;
-            clearTimeout(secretClicksTimer);
-            secretClicksTimer = setTimeout(() => { secretClicksCounter = 0; }, 1500);
-
-            if (secretClicksCounter >= 5) {
-                secretClicksCounter = 0;
-                if (isMasterAdmin) {
-                    showToast(currentLang === 'ru' ? 'Вы уже вошли как Главный Админ' : 'Already logged in as Master Admin', 'info');
-                    switchMainTab('admin');
-                } else {
-                    openAdminPasswordModal();
-                }
-            } else {
-                switchMainTab('home');
-            }
-        };
-
-        window.openAdminPasswordModal = function() {
-            const modal = document.getElementById('adminPasswordModal');
-            const input = document.getElementById('adminPassInput');
-            if (input) input.value = '';
-            if (modal) modal.classList.remove('hidden');
-            if (input) input.focus();
-        };
-
-        window.closeAdminPasswordModal = function() {
-            document.getElementById('adminPasswordModal')?.classList.add('hidden');
-        };
-
-        window.submitAdminPassword = function() {
-            const input = document.getElementById('adminPassInput');
-            const pass = input ? input.value : '';
-            if (pass === 'MalezCoolIopBest67') {
-                isMasterAdmin = true;
-                localStorage.setItem('ctd_is_admin', 'true');
-                updateAdminUi();
-                closeAdminPasswordModal();
-                showToast(currentLang === 'ru' ? 'Добро пожаловать, Главный Администратор!' : 'Welcome, Master Administrator!', 'success');
-                switchMainTab('admin');
-            } else {
-                showToast(currentLang === 'ru' ? 'Неверный пароль администратора!' : 'Invalid administrator password!', 'error');
-            }
-        };
-
-        window.logoutAdmin = function() {
-            isMasterAdmin = false;
-            localStorage.removeItem('ctd_is_admin');
-            updateAdminUi();
-            switchMainTab('home');
-            showToast(currentLang === 'ru' ? 'Вы вышли из режима администратора' : 'Logged out of administrator mode', 'info');
-        };
-
-        window.switchMainTab = function(tab) {
-            currentActiveTab = tab;
-            const secMap = {
-                home: 'homeSection',
-                catalog: 'catalogSection',
-                calculator: 'calcSection',
-                upgrader: 'upgraderSection',
-                crates: 'cratesSection',
-                wiki: 'wikiSection',
-                inventory: 'inventorySection',
-                tierlist: 'tierListSection',
-                history: 'priceHistorySection',
-                admin: 'adminSection'
-            };
-
-            Object.keys(secMap).forEach(t => {
-                const sec = document.getElementById(secMap[t]);
-                if (sec) {
-                    if (t === tab) {
-                        sec.classList.remove('hidden');
-                        sec.classList.remove('anim-tab-enter');
-                        void sec.offsetWidth;
-                        sec.classList.add('anim-tab-enter');
+                if (!dataUrl || !dataUrl.startsWith('data:image/')) return resolve(dataUrl);
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width;
+                    let h = img.height;
+                    if (w > h) {
+                        if (w > maxW) {
+                            h = Math.round((h * maxW) / w);
+                            w = maxW;
+                        }
                     } else {
-                        sec.classList.add('hidden');
+                        if (h > maxH) {
+                            w = Math.round((w * maxH) / h);
+                            h = maxH;
+                        }
                     }
-                }
+                    canvas.width = Math.max(1, w);
+                    canvas.height = Math.max(1, h);
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    resolve(canvas.toDataURL('image/jpeg', quality));
+                };
+                img.onerror = () => resolve(dataUrl);
+                img.src = dataUrl;
             });
+        }
 
-            const homeBtn = document.getElementById('navHomeBtn');
-            if (homeBtn) {
-                homeBtn.className = (tab === 'home')
-                    ? "px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-blue-600 text-white shadow-sm"
-                    : "px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-dark-950 border border-dark-border text-slate-300 hover:text-white";
-            }
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            if (tab === 'home') renderHomeWidgets();
-            if (tab === 'catalog') applyFilters();
-            if (tab === 'calculator') renderTradeSlots();
-            if (tab === 'upgrader') {
-                renderUpgraderBottomList();
-                drawUpgraderWheel(upgraderState.wheelAngle);
-            }
-            if (tab === 'crates') renderCratesView();
-            if (tab === 'wiki') renderWikiList();
-            if (tab === 'inventory') renderInventory();
-            if (tab === 'tierlist') renderTierListBoard();
-            if (tab === 'history') renderPriceHistory();
-            if (tab === 'admin') updateStats();
-        };
-
-        window.toggleAppMenu = function() {
-            document.getElementById('appMenuModal')?.classList.toggle('hidden');
-        };
-        window.closeAppMenu = function() {
-            document.getElementById('appMenuModal')?.classList.add('hidden');
-        };
-        window.navigateFromMenu = function(tab) {
-            closeAppMenu();
-            switchMainTab(tab);
-        };
-
-        window.switchAdminTab = function(subTab) {
-            ['economy', 'units', 'crates', 'integrations'].forEach(t => {
-                const content = document.getElementById(`adminTabContent_${t}`);
-                const btn = document.getElementById(`adminTabBtn_${t}`);
-                if (content) content.classList.toggle('hidden', t !== subTab);
-                if (btn) {
-                    btn.className = (t === subTab)
-                        ? "px-3.5 py-1.5 rounded-xl text-xs font-bold transition bg-emerald-600 text-white shadow-sm"
-                        : "px-3.5 py-1.5 rounded-xl text-xs font-bold transition bg-dark-950 border border-dark-border text-slate-400 hover:text-white";
-                }
+        function compressImageFile(file, maxW = 160, maxH = 160, quality = 0.82) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const compressed = await compressDataUrl(e.target.result, maxW, maxH, quality);
+                    resolve(compressed);
+                };
+                reader.onerror = () => resolve(null);
+                reader.readAsDataURL(file);
             });
-            if (subTab === 'units') updateStats();
-            if (subTab === 'crates') renderAdminCratesList();
-        };
+        }
 
-        window.saveAdminEconomySettings = function() {
-            const amount = parseInt(document.getElementById('adminSettingBonusAmount')?.value, 10) || 10;
-            const cd = parseInt(document.getElementById('adminSettingBonusCooldown')?.value, 10) || 60;
-            const threshold = parseInt(document.getElementById('adminSettingBonusThreshold')?.value, 10) || 50;
-            const sellPct = parseInt(document.getElementById('adminSettingSellPercent')?.value, 10) || 100;
+        // НАДЕЖНАЯ СИСТЕМА СОХРАНЕНИЯ: Local-First с защитой от затирания
+        let catalogItems = [];
+        try {
+            const saved = localStorage.getItem('ctd_catalog_data');
+            catalogItems = saved ? JSON.parse(saved) : defaultCatalog;
+            catalogItems.forEach(u => {
+                if (u.gameValue === undefined || u.gameValue === null) u.gameValue = u.value || 0;
+            });
+        } catch(e) {
+            catalogItems = defaultCatalog;
+        }
 
-            adminSettings = {
-                bonusAmount: amount,
-                bonusCooldown: cd,
-                bonusThreshold: threshold,
-                sellPercent: sellPct
-            };
+        let cratesList = [];
+        try {
+            const savedCrates = localStorage.getItem('ctd_crates_data');
+            cratesList = savedCrates ? JSON.parse(savedCrates) : defaultCrates;
+        } catch(e) {
+            cratesList = defaultCrates;
+        }
 
-            localStorage.setItem('ctd_admin_economy', JSON.stringify(adminSettings));
-            updateBailoutButtonStatus();
-            showToast(currentLang === 'ru' ? 'Параметры экономики сохранены!' : 'Economy settings saved!', 'success');
-        };
+        let wikiStats = {};
+        try {
+            const savedWiki = localStorage.getItem('ctd_wiki_data');
+            wikiStats = savedWiki ? JSON.parse(savedWiki) : initialDefaultWiki;
+        } catch(e) {
+            wikiStats = initialDefaultWiki;
+        }
 
-        window.setPlayerBalanceFromAdmin = function() {
-            const input = document.getElementById('adminCustomBalanceInput');
-            const val = parseInt(input?.value, 10);
-            if (isNaN(val) || val < 0) return showToast(currentLang === 'ru' ? 'Введите число!' : 'Enter a valid number!', 'warn');
+        let lastLocalEditTime = parseInt(localStorage.getItem('ctd_last_local_edit') || "0", 10);
 
-            userValBalance = val;
-            updateUserBalanceDisplay();
-            showToast(`${currentLang === 'ru' ? 'Баланс игрока' : 'Balance for'} ${currentUserNick}: ${val.toLocaleString()} Val`, 'success');
-        };
-
-        window.addPlayerBalanceFromAdmin = function(delta) {
-            userValBalance += delta;
-            updateUserBalanceDisplay();
-            playAudioCoins();
-            showToast(`+${delta.toLocaleString()} Val ➔ ${currentUserNick}!`, 'success');
-        };
-
-        window.resetPlayerBalanceFromAdmin = function() {
-            userValBalance = 0;
-            updateUserBalanceDisplay();
-            showToast(`${currentUserNick}: 0 Val`, 'info');
-        };
-
-        window.saveFirebaseApiKeyFromAdmin = function() {
-            const input = document.getElementById('adminFirebaseApiKeyInput');
-            const key = (input ? input.value : "").trim();
-            if (!key) return showToast(currentLang === 'ru' ? "Введите API-ключ!" : "Enter API key!", "warn");
-
-            currentFirebaseConfig.apiKey = key;
-            localStorage.setItem('ctd_firebase_apikey', key);
-            showToast(currentLang === 'ru' ? "API-ключ сохранён!" : "API Key saved!", "success");
-            initFirebase();
-        };
-
+        function markLocalEdit() {
+            lastLocalEditTime = Date.now();
+            try {
+                localStorage.setItem('ctd_last_local_edit', lastLocalEditTime.toString());
+                localStorage.setItem('ctd_catalog_data', JSON.stringify(catalogItems));
+                localStorage.setItem('ctd_crates_data', JSON.stringify(cratesList));
+                localStorage.setItem('ctd_wiki_data', JSON.stringify(wikiStats));
+            } catch(e) {
+                console.warn("Storage quota warning handled:", e);
+            }
+        }
         export async function initFirebase() {
             const cloudBadge = document.getElementById('headerCloudBadge');
             const cloudDot = document.getElementById('headerCloudDot');
@@ -2931,27 +2054,36 @@
                 firestoreDb = getFirestore(firebaseApp);
 
                 onSnapshot(doc(firestoreDb, "cameraman_td", "catalog"), (snapshot) => {
+                    // Игнорируем промежуточные локальные записи Firestore
+                    if (snapshot.metadata?.hasPendingWrites) return;
+
                     if (snapshot.exists()) {
                         const data = snapshot.data();
                         const cloudTime = Number(data.updatedAt) || 0;
                         const localTime = parseInt(localStorage.getItem('ctd_last_local_edit') || "0", 10);
 
-                        // ЗАЩИТА: перезаписываем локальные данные ТОЛЬКО если облако действительно новее локальных правок!
+                        // ЗАЩИТА: Если пользователь делал локальные правки менее 15 секунд назад,
+                        // облачный слушатель ни при каких условиях не затрет их!
+                        if (Date.now() - localTime < 15000) {
+                            return;
+                        }
+
+                        // Перезаписываем ТОЛЬКО если в облаке время строго новее локального
                         if (cloudTime > localTime) {
                             if (Array.isArray(data.items) && data.items.length > 0) {
                                 catalogItems = data.items;
                                 catalogItems.forEach(u => {
                                     if (u.gameValue === undefined || u.gameValue === null) u.gameValue = u.value || 0;
                                 });
-                                localStorage.setItem('ctd_catalog_data', JSON.stringify(catalogItems));
+                                try { localStorage.setItem('ctd_catalog_data', JSON.stringify(catalogItems)); } catch(e){}
                             }
                             if (Array.isArray(data.crates) && data.crates.length > 0) {
                                 cratesList = data.crates;
-                                localStorage.setItem('ctd_crates_data', JSON.stringify(cratesList));
+                                try { localStorage.setItem('ctd_crates_data', JSON.stringify(cratesList)); } catch(e){}
                             }
                             if (data.wiki && typeof data.wiki === 'object') {
                                 wikiStats = data.wiki;
-                                localStorage.setItem('ctd_wiki_data', JSON.stringify(wikiStats));
+                                try { localStorage.setItem('ctd_wiki_data', JSON.stringify(wikiStats)); } catch(e){}
                             }
                             applyFilters();
                             updateStats();
@@ -2959,9 +2091,7 @@
                             renderCratesView();
                             renderUpgraderBottomList();
                             renderHomeWidgets();
-
                         } else if (localTime > cloudTime && cloudTime > 0) {
-                            // Локальные данные новее, синхронизируем их обратно в Firestore
                             forceSyncToCloud(false);
                         }
 
@@ -3004,7 +2134,7 @@
             markLocalEdit();
             const now = Date.now();
             lastLocalEditTime = now;
-            localStorage.setItem('ctd_last_local_edit', now.toString());
+            try { localStorage.setItem('ctd_last_local_edit', now.toString()); } catch(e){}
 
             if (!firestoreDb) {
                 if (showFeedback) showToast(currentLang === 'ru' ? "База надёжно сохранена в браузере!" : "Saved to browser storage!", "success");
@@ -3239,19 +2369,19 @@
             if (input) input.disabled = checked;
         };
 
-        window.handleImageFileUpload = function(e) {
+        window.handleImageFileUpload = async function(e) {
             const file = e.target.files?.[0];
             if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                uploadedBase64Image = event.target.result;
+            const compressed = await compressImageFile(file, 160, 160, 0.82);
+            if (compressed) {
+                uploadedBase64Image = compressed;
                 const imgInput = document.getElementById('itemImgInput');
-                if (imgInput) imgInput.value = uploadedBase64Image;
-            };
-            reader.readAsDataURL(file);
+                if (imgInput) imgInput.value = compressed;
+                showToast(currentLang === 'ru' ? 'Изображение оптимизировано (~8 КБ)!' : 'Image compressed (~8 KB)!', 'info');
+            }
         };
 
-        window.saveItemFromModal = function() {
+        window.saveItemFromModal = async function() {
             const idField = document.getElementById('itemEditId');
             const name = (document.getElementById('itemNameInput')?.value || '').trim();
             if (!name) return showToast(currentLang === 'ru' ? 'Введите название персонажа!' : 'Enter character name!', 'error');
@@ -3266,7 +2396,16 @@
             const limit = (document.getElementById('itemLimitInput')?.value || '').trim();
             const summon = (document.getElementById('itemSummonInput')?.value || '').trim();
             const trend = document.getElementById('itemTrendSelect')?.value || 'stable';
-            const img = (document.getElementById('itemImgInput')?.value || '').trim() || 'https://placehold.co/180x180/0f172a/38bdf8?text=' + encodeURIComponent(name);
+            
+            let img = (document.getElementById('itemImgInput')?.value || '').trim();
+            if (!img) {
+                img = 'https://placehold.co/180x180/0f172a/38bdf8?text=' + encodeURIComponent(name);
+            } else if (img.startsWith('data:image/') && img.length > 50000) {
+                // Если пользователь вставил гигантский необработанный base64, сжимаем его на лету
+                try {
+                    img = await compressDataUrl(img, 160, 160, 0.82);
+                } catch(e) {}
+            }
 
             const editId = idField ? idField.value : null;
 
@@ -3301,6 +2440,7 @@
                 showToast(currentLang === 'ru' ? `Персонаж ${name} добавлен в каталог!` : `Character ${name} added to catalog!`, 'success');
             }
 
+            // Гарантированное сохранение и немедленное закрытие окна
             markLocalEdit();
             closeItemModal();
             applyFilters();
@@ -4268,16 +3408,15 @@
             }
         };
 
-        window.handleCrateImageUpload = function(e) {
+        window.handleCrateImageUpload = async function(e) {
             const file = e.target.files?.[0];
             if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                uploadedCrateBase64Image = event.target.result;
+            const compressed = await compressImageFile(file, 160, 160, 0.82);
+            if (compressed) {
+                uploadedCrateBase64Image = compressed;
                 const imgInput = document.getElementById('crateImgInput');
-                if (imgInput) imgInput.value = uploadedCrateBase64Image;
-            };
-            reader.readAsDataURL(file);
+                if (imgInput) imgInput.value = compressed;
+            }
         };
 
         window.updateCrateTotalChanceSum = function() {
