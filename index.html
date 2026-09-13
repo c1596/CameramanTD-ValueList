@@ -6,6 +6,8 @@
     <title>Cameraman TD — Hub, Value List, Wiki & Upgrader</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Telegram Mini App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <!-- Google Fonts: Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,11 +59,11 @@
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
             --card-sub-bg: #070c17;
-            --ticker-bg: #0a0f1d;
-            --ticker-border: rgba(37, 99, 235, 0.35);
-            --ticker-badge-bg: rgba(37, 99, 235, 0.2);
-            --ticker-badge-text: #60a5fa;
-            --ticker-item-bg: #0d162a;
+            --ticker-bg: #0b0f19;
+            --ticker-border: rgba(245, 158, 11, 0.3);
+            --ticker-badge-bg: rgba(16, 185, 129, 0.15);
+            --ticker-badge-text: #34d399;
+            --ticker-item-bg: #090e18;
         }
 
         body.theme-light {
@@ -262,10 +264,6 @@
         .border-rarity-MYTHIC { border-color: rgba(239, 68, 68, 0.55); }
         .border-rarity-EXCLUSIVE { border-color: rgba(236, 72, 153, 0.6); }
 
-        .btn-action-pulse:active {
-            transform: scale(0.96);
-        }
-
         #topTickerBar {
             background-color: var(--ticker-bg);
             border-color: var(--ticker-border);
@@ -283,7 +281,7 @@
 </head>
 
 <body class="min-h-screen flex flex-col pb-20 md:pb-6 theme-dark">
-    <!-- ЖИВАЯ БЕГУЩАЯ ЛЕНТА ДРОПОВ (ДИНАМИЧЕСКИ МЕНЯЕТ ЦВЕТ ПОД ТЕМУ, НАСТОЯЩИЕ ИГРОКИ) -->
+    <!-- ЖИВАЯ БЕГУЩАЯ ЛЕНТА ДРОПОВ (АДАПТИВНАЯ ПОД ТЕМЫ ОФОРМЛЕНИЯ) -->
     <div id="topTickerBar" class="border-b overflow-hidden select-none py-1.5 px-2 z-50 text-[11px] backdrop-blur flex items-center gap-2 shadow-sm">
         <div id="topTickerBadge" class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg border font-bold shrink-0 text-[10px] uppercase tracking-wider transition-colors">
             <span id="topTickerBadgeDot" class="w-2 h-2 rounded-full animate-pulse"></span>
@@ -291,7 +289,7 @@
         </div>
         <div class="overflow-hidden flex-1 relative flex items-center">
             <div id="liveTickerTrack" class="ticker-marquee gap-3 text-slate-300">
-                <!-- Заполняется исключительно настоящими действиями игроков -->
+                <!-- Динамические дропы реальных игроков -->
             </div>
         </div>
     </div>
@@ -314,7 +312,7 @@
                         <span id="roleBadge" class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-dark-800 text-slate-400 border border-dark-border">
                             Трейдер
                         </span>
-                        <span id="headerCloudBadge" class="text-[9px] font-bold px-1.5 py-0.2 rounded border flex items-center gap-1">
+                        <span id="headerCloudBadge" class="text-[9px] font-bold px-1.5 py-0.2 rounded border flex items-center gap-1 bg-emerald-500/15 text-emerald-300 border-emerald-500/40">
                             <span id="headerCloudDot" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                             <span id="headerCloudText">База: Активна</span>
                         </span>
@@ -367,7 +365,7 @@
     </header>
 
     <main class="flex-1 max-w-7xl w-full mx-auto px-3 py-4 sm:px-6 sm:py-6 space-y-6">
-        <!-- СЕКЦИЯ 0: ГЛАВНАЯ СТРАНИЦА (ХАБ) СО ВСЕМИ ВКЛАДКАМИ -->
+        <!-- СЕКЦИЯ 0: ГЛАВНАЯ СТРАНИЦА (ХАБ) СО ВСЕМИ 8 ВКЛАДКАМИ -->
         <section id="homeSection" class="space-y-6 anim-tab-enter">
             <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-900/40 via-dark-900 to-indigo-950/40 border border-dark-border p-5 sm:p-8 shadow-xl">
                 <div class="absolute -right-10 -top-10 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -385,7 +383,7 @@
                 </div>
             </div>
 
-            <!-- ВСЕ ВКЛАДКИ ИЗ МЕНЮ НА ГЛАВНОЙ СТРАНИЦЕ (КРОМЕ АДМИНКИ) -->
+            <!-- ВСЕ ВКЛАДКИ ИЗ МЕНЮ НА ГЛАВНОЙ СТРАНИЦЕ -->
             <div class="space-y-3">
                 <h3 class="text-xs sm:text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
                     <span>⚡</span> <span data-i18n="hub_all_sections_title">Все разделы хаба:</span>
@@ -607,7 +605,6 @@
                     <!-- ЦЕНТРАЛЬНЫЙ БЛОК: КОЛЕСО ШАНСОВ -->
                     <div class="lg:col-span-4 flex flex-col items-center justify-center space-y-3">
                         <div class="relative w-64 h-64 flex items-center justify-center">
-                            <!-- Холст колеса фортуны: крутится желтая стрелочка по внешнему ободу точно внутрь -->
                             <canvas id="upgraderWheelCanvas" width="256" height="256" class="rounded-full shadow-2xl"></canvas>
 
                             <!-- Чистый центр с процентом и статусом -->
@@ -654,7 +651,6 @@
                     </div>
                 </div>
 
-                <!-- Нижняя панель: Быстрый выбор юнитов -->
                 <div class="space-y-3 pt-4 border-t border-dark-border">
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
                         <div class="flex items-center gap-1.5 bg-dark-950 p-1 rounded-xl border border-dark-border">
@@ -1469,7 +1465,7 @@
                 </div>
                 <button onclick="closeUserAuthModal()" class="text-slate-400 hover:text-white text-base">✕</button>
             </div>
-            <p class="text-xs text-slate-400" data-i18n="user_profile_desc">Ваш никнейм будет отображаться в <b class="text-emerald-400">Живой ленте дропов</b> (только настоящие игроки):</p>
+            <p class="text-xs text-slate-400" data-i18n="user_profile_desc">Ваш никнейм будет отображаться в Живой ленте дропов:</p>
             <div class="space-y-2">
                 <input type="text" id="userAuthNickInput" placeholder="Ваш игровой никнейм..." data-i18n-placeholder="user_nick_ph"
                        class="w-full bg-dark-950 border border-dark-border focus:border-emerald-500 rounded-xl px-3 py-2 text-xs text-white outline-none">
@@ -1717,7 +1713,7 @@
 
             <div class="text-[11px] text-amber-300/90 bg-amber-500/10 border border-amber-500/30 rounded-xl p-2.5 flex items-center gap-2">
                 <span>💡</span>
-                <span data-i18n="phone_save_tip"><b>Для сохранения на телефоне:</b> зажмите картинку пальцем на 1 секунду и нажмите <i>«Сохранить фото»</i> или используйте кнопку ниже.</span>
+                <span data-i18n="phone_save_tip">Для сохранения на телефоне: зажмите картинку пальцем на 1 секунду и нажмите «Сохранить фото».</span>
             </div>
             
             <div class="flex-1 overflow-auto bg-dark-950 rounded-xl p-2 flex items-center justify-center border border-dark-border/60 min-h-[220px]">
@@ -1842,6 +1838,49 @@
             11: { levels: [{ level: 1, cost: 2000, damage: 850, cooldown: 2.2, range: 26.0 }, { level: 2, cost: 4500, damage: 2100, cooldown: 1.9, range: 30.0 }] }
         };
 
+        // НАДЕЖНОЕ СЖАТИЕ ИЗОБРАЖЕНИЙ ДО 5-8 КБ (ЗАЩИТА ОТ ПЕРЕПОЛНЕНИЯ БАЗЫ ДАННЫХ И ХРАНИЛИЩА)
+        function compressDataUrl(dataUrl, maxW = 160, maxH = 160, quality = 0.82) {
+            return new Promise((resolve) => {
+                if (!dataUrl || !dataUrl.startsWith('data:image/')) return resolve(dataUrl);
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width;
+                    let h = img.height;
+                    if (w > h) {
+                        if (w > maxW) {
+                            h = Math.round((h * maxW) / w);
+                            w = maxW;
+                        }
+                    } else {
+                        if (h > maxH) {
+                            w = Math.round((w * maxH) / h);
+                            h = maxH;
+                        }
+                    }
+                    canvas.width = Math.max(1, w);
+                    canvas.height = Math.max(1, h);
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    resolve(canvas.toDataURL('image/jpeg', quality));
+                };
+                img.onerror = () => resolve(dataUrl);
+                img.src = dataUrl;
+            });
+        }
+
+        function compressImageFile(file, maxW = 160, maxH = 160, quality = 0.82) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const compressed = await compressDataUrl(e.target.result, maxW, maxH, quality);
+                    resolve(compressed);
+                };
+                reader.onerror = () => resolve(null);
+                reader.readAsDataURL(file);
+            });
+        }
+
         // НАДЕЖНАЯ СИСТЕМА СОХРАНЕНИЯ: Local-First с защитой от затирания
         let catalogItems = [];
         try {
@@ -1870,15 +1909,18 @@
             wikiStats = initialDefaultWiki;
         }
 
-        // Таймштамп локальных правок: облако НИКОГДА не затрет локальные правки, если они новее
         let lastLocalEditTime = parseInt(localStorage.getItem('ctd_last_local_edit') || "0", 10);
 
         function markLocalEdit() {
             lastLocalEditTime = Date.now();
-            localStorage.setItem('ctd_last_local_edit', lastLocalEditTime.toString());
-            localStorage.setItem('ctd_catalog_data', JSON.stringify(catalogItems));
-            localStorage.setItem('ctd_crates_data', JSON.stringify(cratesList));
-            localStorage.setItem('ctd_wiki_data', JSON.stringify(wikiStats));
+            try {
+                localStorage.setItem('ctd_last_local_edit', lastLocalEditTime.toString());
+                localStorage.setItem('ctd_catalog_data', JSON.stringify(catalogItems));
+                localStorage.setItem('ctd_crates_data', JSON.stringify(cratesList));
+                localStorage.setItem('ctd_wiki_data', JSON.stringify(wikiStats));
+            } catch(e) {
+                console.warn("Storage quota warning handled:", e);
+            }
         }
 
         let adminSettings = {
@@ -1946,7 +1988,7 @@
         let uploadedCrateBase64Image = "";
         let activePreviewDataUrl = "";
         let pendingConfirmResolver = null;
-let activeCrateId = cratesList[0]?.id || "crate_hub_summon";
+        let activeCrateId = cratesList[0]?.id || "crate_hub_summon";
         let isRouletteSpinning = false;
         let selectedWikiUnitId = catalogItems[0]?.id || 1;
         let activePickerMode = 'trade';
@@ -4443,6 +4485,19 @@ let activeCrateId = cratesList[0]?.id || "crate_hub_summon";
         };
 
         function bootApp() {
+            // Авторизация и интеграция с Telegram Mini App
+            try {
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.ready();
+                    window.Telegram.WebApp.expand();
+                    const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
+                    if (tgUser && (tgUser.first_name || tgUser.username)) {
+                        currentUserNick = tgUser.first_name || tgUser.username;
+                        localStorage.setItem('ctd_user_nick', currentUserNick);
+                    }
+                }
+            } catch(e) {}
+
             setTheme(currentTheme);
             applyTranslations();
             updateAdminUi();
