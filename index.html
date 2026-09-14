@@ -1883,7 +1883,7 @@
             if (savedEco) adminSettings = { ...adminSettings, ...JSON.parse(savedEco) };
         } catch(e) {}
 
-        let userValBalance = 1500;
+        let userValBalance = 100;
         try {
             const savedBal = localStorage.getItem('ctd_user_val_balance');
             if (savedBal !== null) userValBalance = parseInt(savedBal, 10) || 0;
