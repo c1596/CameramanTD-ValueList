@@ -2335,8 +2335,9 @@
                     }
                     canvas.width = w;
                     canvas.height = h;
+                    ctx.clearRect(0, 0, w, h);
                     ctx.drawImage(img, 0, 0, w, h);
-                    const compressedData = canvas.toDataURL('image/jpeg', 0.75);
+                    const compressedData = canvas.toDataURL('image/png');
                     callback(compressedData);
                 };
                 img.src = e.target.result;
