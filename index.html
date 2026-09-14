@@ -4,8 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cameraman TD — Hub, Value List, Wiki & Upgrader</title>
+
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+
     <!-- Google Fonts: Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -265,7 +270,7 @@
 </head>
 
 <body class="min-h-screen flex flex-col pb-20 md:pb-6 theme-dark">
-    <!-- ЖИВАЯ БЕГУЩАЯ ЛЕНТА ДРОПОВ (ДИНАМИЧЕСКИ МЕНЯЕТСЯ С ТЕМОЙ) -->
+    <!-- ЖИВАЯ БЕГУЩАЯ ЛЕНТА ДРОПОВ (АДАПТИРУЕТСЯ ПОД ТЕМУ) -->
     <div id="topTickerContainer" class="themed-top-ticker overflow-hidden select-none py-1.5 px-3 z-50 text-[11px] backdrop-blur flex items-center gap-2 shadow-sm">
         <div id="topOnlineBadge" class="themed-online-badge flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg font-bold shrink-0 text-[10px] uppercase tracking-wider">
             <span class="w-2 h-2 rounded-full bg-current animate-pulse"></span>
@@ -274,12 +279,12 @@
         </div>
         <div class="overflow-hidden flex-1 relative flex items-center">
             <div id="liveTickerTrack" class="ticker-marquee gap-3 text-slate-300">
-                <!-- Динамически заполняется настоящими событиями игроков -->
+                <!-- Динамически заполняется реальными действиями пользователей -->
             </div>
         </div>
     </div>
 
-    <!-- ВЕРХНЯЯ ШАПКА САЙТА -->
+    <!-- ВЕРХНЯЯ ШАПКА ПОРТАЛА -->
     <header class="sticky top-0 z-40 bg-dark-900/95 backdrop-blur-md border-b border-dark-border px-3 py-2.5 sm:px-6 transition-colors duration-200">
         <div class="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
             
@@ -297,22 +302,23 @@
                         <span id="roleBadge" class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-dark-800 text-slate-400 border border-dark-border">
                             Трейдер
                         </span>
-                        <span id="headerCloudBadge" class="text-[9px] font-bold px-1.5 py-0.2 rounded themed-online-badge flex items-center gap-1">
+                        <!-- ИНДИКАТОР СОСТОЯНИЯ БАЗЫ ДАННЫХ (КЛИК ДЛЯ ДИАГНОСТИКИ) -->
+                        <span id="headerCloudBadge" onclick="showCloudDiagnosticsModal()" class="text-[9px] font-bold px-1.5 py-0.2 rounded themed-online-badge flex items-center gap-1 cursor-pointer hover:opacity-80 transition" title="Нажмите для проверки связи с базой">
                             <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
-                            <span id="headerCloudText">Онлайн (Синхронизация)</span>
+                            <span id="headerCloudText">Синхронизация...</span>
                         </span>
                     </div>
                 </div>
             </div>
 
-            <!-- Игровой баланс пользователя (Игровые монеты для апгрейдера и кейсов) -->
+            <!-- Игровой баланс пользователя -->
             <div class="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl bg-dark-950 border border-emerald-500/40 font-mono shadow-sm">
                 <span class="text-slate-400 text-xs hidden sm:inline" data-i18n="balance_label">Игровой Val:</span>
                 <span id="headerUserBalance" class="text-xs sm:text-sm font-black text-emerald-400">0</span>
                 <span class="text-xs text-emerald-500 font-bold">🪙 Val</span>
             </div>
 
-            <!-- Верхняя панель: Профиль игрока, темы, язык и Меню -->
+            <!-- Верхняя панель: Профиль, темы, язык и Меню -->
             <div class="flex items-center gap-1.5 sm:gap-2">
                 <button onclick="openUserAuthModal()" id="headerUserBtn" class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-dark-950 border border-dark-border hover:border-emerald-500/60 text-slate-200 transition flex items-center gap-1.5 shadow-sm">
                     <span>👤</span> <span id="headerUserNick" class="max-w-[70px] sm:max-w-[100px] truncate">Malez</span>
@@ -350,9 +356,8 @@
     </header>
 
     <main class="flex-1 max-w-7xl w-full mx-auto px-3 py-4 sm:px-6 sm:py-6 space-y-6">
-        <!-- СЕКЦИЯ 0: ГЛАВНАЯ СТРАНИЦА (ХАБ СО ВСЕМИ ВКЛАДКАМИ) -->
+        <!-- СЕКЦИЯ 0: ГЛАВНАЯ СТРАНИЦА (ХАБ) -->
         <section id="homeSection" class="space-y-6">
-            <!-- Приветственный баннер -->
             <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-900/40 via-dark-900 to-indigo-950/40 border border-dark-border p-5 sm:p-8 shadow-xl">
                 <div class="absolute -right-10 -top-10 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
                 <div class="relative z-10 max-w-2xl space-y-2">
@@ -369,7 +374,7 @@
                 </div>
             </div>
 
-            <!-- ВСЕ ВКЛАДКИ ИЗ МЕНЮ НА ГЛАВНОЙ СТРАНИЦЕ (Сетка быстрого перехода) -->
+            <!-- Сетка быстрого перехода на главной -->
             <div class="space-y-2">
                 <div class="flex items-center justify-between">
                     <h3 class="text-xs sm:text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5" data-i18n="hub_all_sections_title">
@@ -420,7 +425,7 @@
                 </div>
             </div>
 
-            <!-- Интерактивный виджет: Доступные кейсы на главной -->
+            <!-- Доступные кейсы на главной -->
             <div class="bg-dark-900 border border-dark-border rounded-2xl p-4 sm:p-5 space-y-3">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
@@ -431,12 +436,10 @@
                         <span data-i18n="view_all_crates">Все кейсы</span> <span>➔</span>
                     </button>
                 </div>
-                <div id="homeFeaturedCratesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                    <!-- Заполняется динамически через JS -->
-                </div>
+                <div id="homeFeaturedCratesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
             </div>
 
-            <!-- Интерактивный виджет: Топ персонажей Value List на главной -->
+            <!-- Топ персонажей Value List на главной -->
             <div class="bg-dark-900 border border-dark-border rounded-2xl p-4 sm:p-5 space-y-3">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
@@ -447,14 +450,11 @@
                         <span data-i18n="view_full_catalog">Полный Value List</span> <span>➔</span>
                     </button>
                 </div>
-                <div id="homeFeaturedUnitsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
-                    <!-- Заполняется динамически через JS -->
-                </div>
+                <div id="homeFeaturedUnitsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5"></div>
             </div>
 
-            <!-- Интерактивный виджет: Превью Тир-листа & Википедии на главной -->
+            <!-- Превью Тир-листа & Истории цен -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <!-- Превью Тир-листа -->
                 <div class="bg-dark-900 border border-dark-border rounded-2xl p-4 space-y-3">
                     <div class="flex items-center justify-between border-b border-dark-border pb-2.5">
                         <div class="flex items-center gap-2">
@@ -463,12 +463,9 @@
                         </div>
                         <button onclick="switchMainTab('tierlist')" class="text-xs text-rose-400 font-bold hover:underline" data-i18n="open_tierlist">Открыть весь Тир-Лист ➔</button>
                     </div>
-                    <div id="homeTierListPreview" class="flex flex-wrap gap-2 min-h-[64px] items-center p-2 rounded-xl bg-dark-950 border border-dark-border">
-                        <!-- Заполняется через renderHomeWidgets() -->
-                    </div>
+                    <div id="homeTierListPreview" class="flex flex-wrap gap-2 min-h-[64px] items-center p-2 rounded-xl bg-dark-950 border border-dark-border"></div>
                 </div>
 
-                <!-- Превью Истории цен и котировок -->
                 <div class="bg-dark-900 border border-dark-border rounded-2xl p-4 space-y-3">
                     <div class="flex items-center justify-between border-b border-dark-border pb-2.5">
                         <div class="flex items-center gap-2">
@@ -477,9 +474,7 @@
                         </div>
                         <button onclick="switchMainTab('history')" class="text-xs text-teal-400 font-bold hover:underline" data-i18n="open_history">Вся история ➔</button>
                     </div>
-                    <div id="homeHistoryPreview" class="space-y-1.5 max-h-40 overflow-y-auto pr-1">
-                        <!-- Заполняется через renderHomeWidgets() -->
-                    </div>
+                    <div id="homeHistoryPreview" class="space-y-1.5 max-h-40 overflow-y-auto pr-1"></div>
                 </div>
             </div>
         </section>
@@ -545,9 +540,7 @@
             </div>
 
             <!-- Сетка карточек юнитов -->
-            <div id="catalogGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-2.5 sm:gap-3.5">
-                <!-- Динамически заполняется через JS -->
-            </div>
+            <div id="catalogGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-2.5 sm:gap-3.5"></div>
         </section>
 
         <!-- СЕКЦИЯ 2: АПГРЕЙДЕР (UPGRADER) -->
@@ -574,16 +567,15 @@
                             <span id="upgraderBalanceDisplay" class="text-sm font-black text-emerald-400">0</span>
                             <span class="text-xs text-emerald-500 font-bold">🪙 Val</span>
                         </div>
-                        <!-- Кнопка бонуса помощи -->
                         <button onclick="claimBailoutBonus()" id="bailoutBonusBtn" class="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-emerald-500 hover:from-amber-400 hover:to-emerald-400 text-slate-950 font-black text-xs rounded-xl shadow-md transition transform hover:scale-105 active:scale-95 whitespace-nowrap" title="Бонус доступен при малом балансе">
                             🎁 <span id="bailoutBtnText">+10 Val</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- Главная арена: 2 интерактивных слота + Синхронизированное колесо -->
+                <!-- Главная арена: Слоты и Колесо шансов -->
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
-                    <!-- ЛЕВЫЙ СЛОТ: ЧТО СТАВИШЬ -->
+                    <!-- ЛЕВЫЙ СЛОТ: СТАВКА -->
                     <div id="upgSourceSlotCard" onclick="openUpgraderSlotPicker('source')" class="lg:col-span-4 bg-dark-950/80 hover:bg-dark-950 border-2 border-dashed border-dark-border hover:border-cyan-500/80 rounded-2xl p-4 flex flex-col justify-between h-72 shadow-inner cursor-pointer transition group">
                         <div class="flex items-center justify-between text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                             <span class="group-hover:text-cyan-400 transition" data-i18n="upg_slot1_title">1. Что ставишь (Твой юнит):</span>
@@ -604,13 +596,10 @@
                         </div>
                     </div>
 
-                    <!-- ЦЕНТРАЛЬНЫЙ БЛОК: СИНХРОНИЗИРОВАННОЕ КОЛЕСО ШАНСОВ -->
+                    <!-- ЦЕНТРАЛЬНЫЙ БЛОК: СИНХРОНИЗИРОВАННОЕ КОЛЕСО -->
                     <div class="lg:col-span-4 flex flex-col items-center justify-center space-y-3">
                         <div class="relative w-64 h-64 flex items-center justify-center">
-                            <!-- Холст колеса фортуны: стрелка и зеленый сектор 100% совпадают -->
                             <canvas id="upgraderWheelCanvas" width="256" height="256" class="rounded-full shadow-2xl"></canvas>
-
-                            <!-- Центр с процентом победы -->
                             <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none">
                                 <span id="upgChancePercentDisplay" class="text-3xl font-black font-mono text-emerald-400 tracking-tight drop-shadow-md">0.00%</span>
                                 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5" data-i18n="upg_win_chance_label">ШАНС ПОБЕДЫ</span>
@@ -673,9 +662,7 @@
                         </div>
                     </div>
 
-                    <div id="upgraderBottomItemsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 max-h-80 overflow-y-auto pr-1">
-                        <!-- Заполняется динамически через JS -->
-                    </div>
+                    <div id="upgraderBottomItemsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 max-h-80 overflow-y-auto pr-1"></div>
                 </div>
             </div>
         </section>
@@ -748,9 +735,7 @@
                             </div>
                         </div>
 
-                        <div id="youSlotsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-                            <!-- Слоты генерируются через renderTradeSlots() -->
-                        </div>
+                        <div id="youSlotsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2"></div>
 
                         <div class="flex justify-end pt-1">
                             <button onclick="clearTradeSide('you')" data-i18n="clear_side" class="text-[11px] font-bold text-slate-400 hover:text-rose-400 transition">
@@ -771,9 +756,7 @@
                             </div>
                         </div>
 
-                        <div id="themSlotsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-                            <!-- Слоты генерируются через renderTradeSlots() -->
-                        </div>
+                        <div id="themSlotsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2"></div>
 
                         <div class="flex justify-end pt-1">
                             <button onclick="clearTradeSide('them')" data-i18n="clear_side" class="text-[11px] font-bold text-slate-400 hover:text-rose-400 transition">
@@ -892,9 +875,7 @@
                     </div>
                 </div>
 
-                <div id="wikiUnitDetailsBox" class="bg-dark-950 border border-dark-border rounded-2xl p-4 sm:p-5 space-y-5">
-                    <!-- Заполняется через renderWikiDetails() -->
-                </div>
+                <div id="wikiUnitDetailsBox" class="bg-dark-950 border border-dark-border rounded-2xl p-4 sm:p-5 space-y-5"></div>
 
                 <div class="space-y-2 pt-2 border-t border-dark-border">
                     <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider" data-i18n="wiki_choose_unit">Выберите персонажа для просмотра:</h3>
@@ -1260,8 +1241,11 @@
                             <button onclick="forceSyncToCloud(true)" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
                                 <span>🚀</span> <span>Записать всю базу в Firestore</span>
                             </button>
+                            <button onclick="pullDataFromCloudManual()" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                                <span>📥</span> <span>Загрузить из Cloud на устройство</span>
+                            </button>
                             <button onclick="testFirebaseRead()" class="px-3 py-2 bg-dark-900 hover:bg-dark-850 border border-dark-border text-slate-300 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
-                                <span>🔄</span> <span>Проверить чтение из Cloud</span>
+                                <span>🔄</span> <span>Проверить статус</span>
                             </button>
                             <button onclick="clearLiveTickerDrops()" class="px-3 py-2 bg-rose-900/40 hover:bg-rose-900/60 border border-rose-500/40 text-rose-300 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
                                 <span>🧹</span> <span>Очистить историю дропов</span>
@@ -1462,7 +1446,7 @@
         </div>
     </div>
 
-    <!-- Модальное окно создания/редактирования персонажа (с чистыми дефолтами) -->
+    <!-- Модальное окно создания/редактирования персонажа -->
     <div id="itemEditorModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-3">
         <div class="bg-dark-900 border border-dark-border rounded-2xl w-full max-w-md p-4 sm:p-5 space-y-3 shadow-2xl max-h-[90vh] overflow-y-auto anim-modal">
             <div class="flex items-center justify-between pb-2 border-b border-dark-border">
@@ -1538,7 +1522,7 @@
                     </div>
                 </div>
 
-                <!-- Поля лимита и саммона (по умолчанию пустые) -->
+                <!-- Поля лимита и саммона (по умолчанию чистые) -->
                 <div class="grid grid-cols-2 gap-2 pt-1 border-t border-dark-border/60">
                     <div>
                         <label class="text-slate-400 block mb-1" data-i18n="modal_limit">Лимит на карте:</label>
@@ -1554,6 +1538,7 @@
                     <label class="text-slate-400 block mb-1" data-i18n="modal_image_url">Ссылка на фото или загрузка файла:</label>
                     <input type="text" id="itemImgInput" placeholder="https://..." class="w-full bg-dark-950 border border-dark-border rounded-xl px-3 py-2 text-white outline-none mb-1">
                     <input type="file" id="itemFileInput" onchange="handleImageFileUpload(event)" accept="image/*" class="w-full text-[11px] text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-dark-850 file:text-slate-300">
+                    <span id="imgCompressNotice" class="text-[10px] text-emerald-400 hidden mt-1 block">✅ Фото автоматически оптимизировано для базы</span>
                 </div>
             </div>
             <div class="pt-2 flex justify-end gap-2 border-t border-dark-border">
@@ -1731,7 +1716,7 @@
         </div>
     </div>
 
-    <!-- Модальное окно подтверждения -->
+    <!-- Модальное окно подтверждения действия -->
     <div id="confirmActionModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-3">
         <div class="bg-dark-900 border border-dark-border rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl anim-modal">
             <h3 id="confirmActionTitle" class="text-sm font-bold text-white">Подтверждение</h3>
@@ -1739,6 +1724,45 @@
             <div class="flex justify-end gap-2 pt-2 border-t border-dark-border">
                 <button onclick="resolveCustomConfirm(false)" class="px-3 py-2 bg-dark-950 text-slate-400 text-xs font-bold rounded-xl" data-i18n="btn_cancel">Отмена</button>
                 <button onclick="resolveCustomConfirm(true)" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl shadow-sm">Да, продолжить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно диагностики базы данных -->
+    <div id="cloudDiagnosticsModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-3">
+        <div class="bg-dark-900 border border-dark-border rounded-2xl w-full max-w-md p-5 space-y-3.5 shadow-2xl anim-modal text-xs">
+            <div class="flex items-center justify-between pb-2 border-b border-dark-border">
+                <div class="flex items-center gap-2">
+                    <span class="text-lg">☁️</span>
+                    <h3 class="text-sm font-bold text-white">Диагностика связи с Базой Данных</h3>
+                </div>
+                <button onclick="closeCloudDiagnosticsModal()" class="text-slate-400 hover:text-white text-base">✕</button>
+            </div>
+            <div class="space-y-2 font-mono">
+                <div class="flex justify-between p-2 rounded-lg bg-dark-950 border border-dark-border">
+                    <span class="text-slate-400 font-sans">Статус подключения:</span>
+                    <span id="diagStatusText" class="font-bold text-emerald-400">Проверка...</span>
+                </div>
+                <div class="flex justify-between p-2 rounded-lg bg-dark-950 border border-dark-border">
+                    <span class="text-slate-400 font-sans">Проект Firestore:</span>
+                    <span class="font-bold text-cyan-400">mlzas-eaa91</span>
+                </div>
+                <div class="flex justify-between p-2 rounded-lg bg-dark-950 border border-dark-border">
+                    <span class="text-slate-400 font-sans">Путь к документу:</span>
+                    <span id="diagPathText" class="text-[10px] text-slate-300">cameraman_td/catalog</span>
+                </div>
+                <div class="flex justify-between p-2 rounded-lg bg-dark-950 border border-dark-border">
+                    <span class="text-slate-400 font-sans">Юнитов в памяти устройства:</span>
+                    <span id="diagLocalCount" class="font-bold text-white">0</span>
+                </div>
+            </div>
+            <div class="pt-2 flex flex-col gap-2 border-t border-dark-border">
+                <button onclick="pullDataFromCloudManual()" class="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition flex items-center justify-center gap-2">
+                    <span>📥</span> <span>Загрузить актуальную базу из облака</span>
+                </button>
+                <button onclick="forceSyncToCloud(true)" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition flex items-center justify-center gap-2">
+                    <span>🚀</span> <span>Отправить данные с этого устройства в облако</span>
+                </button>
             </div>
         </div>
     </div>
@@ -1751,6 +1775,7 @@
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Стандартный начальный каталог персонажей
         const defaultCatalog = [
             { id: 1, name: "Speakerman", rarity: "COMMON", category: "combat", value: 50, gameValue: 50, isValNA: false, demand: 3, isDemNA: false, trend: "stable", limit: "—", summon: "—", pools: "Basic", crates: "Summon", img: "https://placehold.co/180x180/0d172a/94a3b8?text=Speakerman" },
             { id: 2, name: "Camerawoman", rarity: "COMMON", category: "combat", value: 60, gameValue: 60, isValNA: false, demand: 3, isDemNA: false, trend: "stable", limit: "—", summon: "—", pools: "Basic", crates: "Summon", img: "https://placehold.co/180x180/0d172a/94a3b8?text=Camerawoman" },
@@ -1817,6 +1842,7 @@
             11: { levels: [{ level: 1, cost: 2000, damage: 850, cooldown: 2.2, range: 26.0 }, { level: 2, cost: 4500, damage: 2100, cooldown: 1.9, range: 30.0 }] }
         };
 
+        // Локальное состояние с защитой от сбоев localStorage
         let catalogItems = [];
         try {
             const saved = localStorage.getItem('ctd_catalog_data');
@@ -1846,8 +1872,6 @@
             wikiStats = initialDefaultWiki;
         }
 
-        let lastLocalChangeTimestamp = parseInt(localStorage.getItem('ctd_last_local_ts') || "0", 10);
-
         let adminSettings = {
             bonusAmount: 10,
             bonusCooldown: 60,
@@ -1859,53 +1883,72 @@
             if (savedEco) adminSettings = { ...adminSettings, ...JSON.parse(savedEco) };
         } catch(e) {}
 
-        let userValBalance = parseInt(localStorage.getItem('ctd_user_val_balance') || "1500", 10);
-        if (isNaN(userValBalance) || userValBalance < 0) userValBalance = 1500;
+        let userValBalance = 1500;
+        try {
+            const savedBal = localStorage.getItem('ctd_user_val_balance');
+            if (savedBal !== null) userValBalance = parseInt(savedBal, 10) || 0;
+        } catch(e) {}
 
-        let currentUserNick = localStorage.getItem('ctd_user_nick') || "Malez";
-        let currentLang = localStorage.getItem('ctd_lang') || 'ru';
-        let currentTheme = localStorage.getItem('ctd_theme') || 'dark';
-        let discordWebhookUrl = localStorage.getItem('ctd_discord_webhook') || "";
-        let lastBailoutClaimTime = parseInt(localStorage.getItem('ctd_last_bailout_time') || "0", 10);
+        let currentUserNick = "Malez";
+        try {
+            const savedNick = localStorage.getItem('ctd_user_nick');
+            if (savedNick) currentUserNick = savedNick;
+        } catch(e) {}
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'cameraman-td-hub';
-        const rawFirebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "AIzaSyBHhwl_QlOPgakY5iB9idq41RT75hmJhi8",
-            authDomain: "mlzas-eaa91.firebaseapp.com",
-            projectId: "mlzas-eaa91",
-            storageBucket: "mlzas-eaa91.appspot.com",
-            messagingSenderId: "107123456789",
-            appId: "1:107123456789:web:abcdef123456"
-        };
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        let currentLang = 'ru';
+        try {
+            const savedLang = localStorage.getItem('ctd_lang');
+            if (savedLang) currentLang = savedLang;
+        } catch(e) {}
 
-        let currentTradeSlotCount = parseInt(localStorage.getItem('ctd_trade_slot_count') || "10", 10);
-        if (![6, 8, 10].includes(currentTradeSlotCount)) currentTradeSlotCount = 10;
+        let currentTheme = 'dark';
+        try {
+            const savedTheme = localStorage.getItem('ctd_theme');
+            if (savedTheme) currentTheme = savedTheme;
+        } catch(e) {}
+
+        let discordWebhookUrl = "";
+        try {
+            discordWebhookUrl = localStorage.getItem('ctd_discord_webhook') || "";
+        } catch(e) {}
+
+        let lastBailoutClaimTime = 0;
+        try {
+            lastBailoutClaimTime = parseInt(localStorage.getItem('ctd_last_bailout_time') || "0", 10);
+        } catch(e) {}
+
+        let currentTradeSlotCount = 10;
+        try {
+            const savedSlots = parseInt(localStorage.getItem('ctd_trade_slot_count') || "10", 10);
+            if ([6, 8, 10].includes(savedSlots)) currentTradeSlotCount = savedSlots;
+        } catch(e) {}
 
         let tradeState = {
             you: new Array(currentTradeSlotCount).fill(null),
             them: new Array(currentTradeSlotCount).fill(null)
         };
 
-        let userInventory = [];
+        let userInventory = [
+            { unitId: 2, qty: 7 },
+            { unitId: 4, qty: 5 },
+            { unitId: 11, qty: 18 },
+            { unitId: 1, qty: 3 },
+            { unitId: 6, qty: 2 }
+        ];
         try {
             const savedInv = localStorage.getItem('ctd_inventory_data');
-            userInventory = savedInv ? JSON.parse(savedInv) : [
-                { unitId: 2, qty: 7 },
-                { unitId: 4, qty: 5 },
-                { unitId: 11, qty: 18 },
-                { unitId: 1, qty: 3 },
-                { unitId: 6, qty: 2 }
-            ];
-        } catch(e) {
-            userInventory = [{ unitId: 2, qty: 1 }];
-        }
+            if (savedInv) userInventory = JSON.parse(savedInv);
+        } catch(e) {}
 
         let tierListState = { S: [11, 12], A: [9, 10], B: [6, 7, 8], C: [3, 4, 5], D: [1, 2] };
         let activeRarityFilter = 'all';
         let activeTargetSlotSide = 'you';
         let activeTargetSlotIndex = 0;
-        let isMasterAdmin = localStorage.getItem('ctd_is_admin') === 'true';
+        let isMasterAdmin = false;
+        try {
+            isMasterAdmin = localStorage.getItem('ctd_is_admin') === 'true';
+        } catch(e) {}
+
         let secretClicksCounter = 0;
         let secretClicksTimer = null;
         let uploadedBase64Image = "";
@@ -1930,11 +1973,258 @@
             targetUnit: null,
             winChance: 0,
             isSpinning: false,
-            wheelAngle: 0, // In radians, 0 = 12 o'clock
+            wheelAngle: 0,
             bottomTab: 'inventory'
         };
 
         let firebaseApp = null, firebaseAuth = null, firestoreDb = null;
+        let isCloudConnected = false;
+
+        const rawFirebaseConfig = {
+            apiKey: "AIzaSyBHhwl_QlOPgakY5iB9idq41RT75hmJhi8",
+            authDomain: "mlzas-eaa91.firebaseapp.com",
+            projectId: "mlzas-eaa91",
+            storageBucket: "mlzas-eaa91.appspot.com",
+            messagingSenderId: "107123456789",
+            appId: "1:107123456789:web:abcdef123456"
+        };
+
+        /**
+         * Умное разрешение пути Firestore:
+         * 1. Если сайт в песочнице с __app_id: ровно 6 сегментов (четное число!).
+         * 2. Если сайт на GitHub Pages: ровно 2 сегмента cameraman_td/{collectionKey} (четное число!).
+         * Никаких ошибок "Document references must have an even number of segments"!
+         */
+        function getFirestoreDocRef(collectionKey) {
+            if (!firestoreDb) return null;
+            if (typeof __app_id !== 'undefined' && __app_id) {
+                return doc(firestoreDb, 'artifacts', __app_id, 'public', 'data', collectionKey, 'main');
+            }
+            return doc(firestoreDb, 'cameraman_td', collectionKey);
+        }
+
+        /**
+         * Инициализация Firebase с Auth Guard (ждём вход перед чтением/записью)
+         */
+        export async function initFirebase() {
+            const cloudBadge = document.getElementById('headerCloudBadge');
+            const cloudText = document.getElementById('headerCloudText');
+            const adminBadge = document.getElementById('adminDbStatusBadge');
+            const adminLog = document.getElementById('adminCloudLog');
+
+            try {
+                if (!firebaseApp) {
+                    firebaseApp = initializeApp(rawFirebaseConfig);
+                }
+                firebaseAuth = getAuth(firebaseApp);
+
+                // Обязательно входим перед любыми запросами в Firestore
+                try {
+                    await signInAnonymously(firebaseAuth);
+                } catch(authErr) {
+                    console.warn("Firebase Auth Notice:", authErr.message);
+                }
+
+                firestoreDb = getFirestore(firebaseApp);
+                const catalogDocRef = getFirestoreDocRef('catalog');
+                if (!catalogDocRef) return;
+
+                // Слушатель каталога: ТОЛЬКО СЧИТЫВАЕМ ДАННЫЕ ИЗ ОБЛАКА, НИКОГДА НЕ ПЕРЕЗАПИСЫВАЕМ ПРИ СТАРТЕ!
+                onSnapshot(catalogDocRef, (snapshot) => {
+                    isCloudConnected = true;
+                    if (snapshot.exists()) {
+                        const data = snapshot.data();
+                        if (Array.isArray(data.items) && data.items.length > 0) {
+                            catalogItems = data.items;
+                            catalogItems.forEach(u => {
+                                if (u.gameValue === undefined || u.gameValue === null) u.gameValue = u.value || 0;
+                                if (u.limit === undefined) u.limit = "—";
+                                if (u.summon === undefined) u.summon = "—";
+                            });
+                            try { localStorage.setItem('ctd_catalog_data', JSON.stringify(catalogItems)); } catch(e) {}
+                        }
+                        if (Array.isArray(data.crates) && data.crates.length > 0) {
+                            cratesList = data.crates;
+                            try { localStorage.setItem('ctd_crates_data', JSON.stringify(cratesList)); } catch(e) {}
+                        }
+                        if (data.wiki && typeof data.wiki === 'object') {
+                            wikiStats = data.wiki;
+                            try { localStorage.setItem('ctd_wiki_data', JSON.stringify(wikiStats)); } catch(e) {}
+                        }
+                        applyFilters();
+                        updateStats();
+                        renderWikiList();
+                        renderCratesView();
+                        renderUpgraderBottomList();
+                        renderHomeWidgets();
+                    }
+
+                    if (cloudBadge) {
+                        cloudBadge.className = "text-[9px] font-bold px-1.5 py-0.2 rounded themed-online-badge flex items-center gap-1 cursor-pointer hover:opacity-80 transition";
+                    }
+                    if (cloudText) cloudText.innerText = currentLang === 'en' ? "Online (Firestore)" : "Онлайн (Firestore)";
+                    if (adminBadge) {
+                        adminBadge.innerText = "Online (Firestore)";
+                        adminBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
+                    }
+                    if (adminLog) adminLog.innerText = `🟢 Firestore подключен! Синхронизировано ${catalogItems.length} юнитов. (${new Date().toLocaleTimeString()})`;
+                }, (err) => {
+                    isCloudConnected = false;
+                    if (cloudText) cloudText.innerText = currentLang === 'en' ? "Offline (Cache)" : "Оффлайн (Кэш)";
+                    if (adminLog) adminLog.innerText = `⚠️ Оффлайн режим (${err.message})`;
+                });
+
+                // Слушатель живых дропов игроков
+                const dropsDocRef = getFirestoreDocRef('live_drops');
+                if (dropsDocRef) {
+                    onSnapshot(dropsDocRef, (snapshot) => {
+                        if (snapshot.exists()) {
+                            const data = snapshot.data();
+                            if (Array.isArray(data.events)) {
+                                liveTickerEvents = data.events;
+                                try { localStorage.setItem('ctd_real_drops_cache', JSON.stringify(liveTickerEvents)); } catch(e) {}
+                                renderLiveTicker();
+                            }
+                        }
+                    }, () => {});
+                }
+
+            } catch(err) {
+                isCloudConnected = false;
+                if (adminLog) adminLog.innerText = `⚠️ Ошибка инициализации: ${err.message}`;
+            }
+        }
+        window.initFirebase = initFirebase;
+
+        /**
+         * Принудительная запись базы в облако
+         */
+        window.forceSyncToCloud = async function(showFeedback = true) {
+            const logEl = document.getElementById('adminCloudLog');
+            if (!firestoreDb) {
+                if (showFeedback) showToast(currentLang === 'en' ? "Saved to local cache" : "Сохранено в локальный кэш", "info");
+                return;
+            }
+            try {
+                const catalogDocRef = getFirestoreDocRef('catalog');
+                if (!catalogDocRef) return;
+                
+                await setDoc(catalogDocRef, {
+                    items: catalogItems,
+                    crates: cratesList,
+                    wiki: wikiStats,
+                    updatedAt: Date.now()
+                });
+                if (logEl) logEl.innerText = `🟢 База успешно записана в Google Cloud Firestore! (${catalogItems.length} юнитов)`;
+                if (showFeedback) showToast(currentLang === 'en' ? 'Database synced to cloud!' : 'База сохранена в облаке для всех устройств!', 'success');
+            } catch(err) {
+                if (logEl) logEl.innerText = `❌ Ошибка: ${err.message}`;
+                if (showFeedback) showToast(`Ошибка записи: ${err.message}`, 'error');
+            }
+        };
+
+        /**
+         * Принудительная загрузка базы из облака на текущее устройство
+         */
+        window.pullDataFromCloudManual = async function() {
+            if (!firestoreDb) return showToast("Firestore не подключен", "warn");
+            try {
+                const catalogDocRef = getFirestoreDocRef('catalog');
+                const snap = await getDoc(catalogDocRef);
+                if (snap.exists()) {
+                    const data = snap.data();
+                    if (Array.isArray(data.items)) {
+                        catalogItems = data.items;
+                        try { localStorage.setItem('ctd_catalog_data', JSON.stringify(catalogItems)); } catch(e) {}
+                    }
+                    if (Array.isArray(data.crates)) {
+                        cratesList = data.crates;
+                        try { localStorage.setItem('ctd_crates_data', JSON.stringify(cratesList)); } catch(e) {}
+                    }
+                    if (data.wiki) {
+                        wikiStats = data.wiki;
+                        try { localStorage.setItem('ctd_wiki_data', JSON.stringify(wikiStats)); } catch(e) {}
+                    }
+                    applyFilters();
+                    updateStats();
+                    renderWikiList();
+                    renderCratesView();
+                    renderHomeWidgets();
+                    showToast(`Загружено из облака: ${catalogItems.length} юнитов!`, 'success');
+                } else {
+                    showToast('В облаке пока нет данных. Нажмите "Записать в Firestore" на ПК.', 'warn');
+                }
+            } catch(e) {
+                showToast(`Ошибка загрузки: ${e.message}`, 'error');
+            }
+        };
+
+        window.testFirebaseRead = async function() {
+            if (!firestoreDb) return showToast("Firestore не подключен", "warn");
+            try {
+                const catalogDocRef = getFirestoreDocRef('catalog');
+                const snap = await getDoc(catalogDocRef);
+                if (snap.exists()) {
+                    const data = snap.data();
+                    showToast(`В облаке: ${data.items?.length || 0} юнитов, ${data.crates?.length || 0} кейсов`, 'success');
+                } else {
+                    showToast('Документ в Firestore пока пуст.', 'warn');
+                }
+            } catch(err) {
+                showToast(`Ошибка: ${err.message}`, 'error');
+            }
+        };
+
+        window.showCloudDiagnosticsModal = function() {
+            const modal = document.getElementById('cloudDiagnosticsModal');
+            const statusText = document.getElementById('diagStatusText');
+            const localCount = document.getElementById('diagLocalCount');
+            const pathText = document.getElementById('diagPathText');
+
+            if (statusText) statusText.innerText = isCloudConnected ? "Подключено (Онлайн) ✅" : "Локальный режим ⚠️";
+            if (localCount) localCount.innerText = `${catalogItems.length} юнитов`;
+            if (pathText) pathText.innerText = (typeof __app_id !== 'undefined' && __app_id) ? `artifacts/${__app_id}/.../catalog/main` : 'cameraman_td/catalog';
+            if (modal) modal.classList.remove('hidden');
+        };
+
+        window.closeCloudDiagnosticsModal = function() {
+            document.getElementById('cloudDiagnosticsModal')?.classList.add('hidden');
+        };
+
+        function initTelegramIntegration() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                const tg = window.Telegram.WebApp;
+                try {
+                    tg.ready();
+                    tg.expand();
+
+                    // Авторизация через профиль Telegram
+                    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                        const user = tg.initDataUnsafe.user;
+                        currentUserNick = user.username ? `@${user.username}` : (user.first_name || "Agent");
+                        try { localStorage.setItem('ctd_user_nick', currentUserNick); } catch(e) {}
+                        updatePlayerAccountUi();
+                    }
+
+                    // Синхронизация темы оформления
+                    if (tg.colorScheme === 'light') {
+                        setTheme('light');
+                    }
+                } catch(e) {
+                    console.log("TWA Init skipped:", e.message);
+                }
+            }
+        }
+
+        function triggerHaptic(type = 'impact', style = 'medium') {
+            try {
+                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                    const haptic = window.Telegram.WebApp.HapticFeedback;
+                    if (type === 'impact') haptic.impactOccurred(style);
+                    else if (type === 'notification') haptic.notificationOccurred(style);
+                }
+            } catch(e) {}
+        }
 
         let audioCtx = null;
         function getAudioContext() {
@@ -1947,6 +2237,7 @@
         }
 
         window.playAudioTick = function(freqMultiplier = 1) {
+            triggerHaptic('impact', 'light');
             try {
                 const ctx = getAudioContext();
                 const osc = ctx.createOscillator();
@@ -1964,6 +2255,7 @@
         };
 
         window.playAudioWin = function() {
+            triggerHaptic('notification', 'success');
             try {
                 const ctx = getAudioContext();
                 const notes = [523.25, 659.25, 783.99, 1046.50];
@@ -1984,6 +2276,7 @@
         };
 
         window.playAudioLose = function() {
+            triggerHaptic('notification', 'error');
             try {
                 const ctx = getAudioContext();
                 const osc = ctx.createOscillator();
@@ -2001,6 +2294,7 @@
         };
 
         window.playAudioCoins = function() {
+            triggerHaptic('impact', 'medium');
             try {
                 const ctx = getAudioContext();
                 [987.77, 1318.51].forEach((freq, idx) => {
@@ -2019,6 +2313,37 @@
             } catch(e) {}
         };
 
+        /**
+         * Сжатие картинки через Canvas перед сохранением:
+         * Превращает огромные фото с телефонов (5-10 МБ) в компактные миниатюры 180x180 px (~15 КБ).
+         * База никогда не переполняется и модалка закрывается мгновенно!
+         */
+        function compressUploadedImage(file, callback) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const maxDim = 180;
+                    let w = img.width;
+                    let h = img.height;
+                    if (w > h) {
+                        if (w > maxDim) { h = Math.round(h * (maxDim / w)); w = maxDim; }
+                    } else {
+                        if (h > maxDim) { w = Math.round(w * (maxDim / h)); h = maxDim; }
+                    }
+                    canvas.width = w;
+                    canvas.height = h;
+                    ctx.drawImage(img, 0, 0, w, h);
+                    const compressedData = canvas.toDataURL('image/jpeg', 0.75);
+                    callback(compressedData);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
         window.getUnitTradeValue = function(unit) {
             if (!unit) return 0;
             if (unit.isValNA) return 0;
@@ -2036,7 +2361,7 @@
         };
 
         window.updateUserBalanceDisplay = function() {
-            localStorage.setItem('ctd_user_val_balance', userValBalance.toString());
+            try { localStorage.setItem('ctd_user_val_balance', userValBalance.toString()); } catch(e) {}
             const b1 = document.getElementById('headerUserBalance');
             const b2 = document.getElementById('upgraderBalanceDisplay');
             if (b1) b1.innerText = userValBalance.toLocaleString();
@@ -2085,7 +2410,7 @@
             }
 
             lastBailoutClaimTime = now;
-            localStorage.setItem('ctd_last_bailout_time', now.toString());
+            try { localStorage.setItem('ctd_last_bailout_time', now.toString()); } catch(e) {}
 
             const amount = adminSettings.bonusAmount || 10;
             userValBalance += amount;
@@ -2099,13 +2424,12 @@
         window.setTheme = function(themeName) {
             if (!availableThemes.includes(themeName)) themeName = 'dark';
             currentTheme = themeName;
-            localStorage.setItem('ctd_theme', themeName);
+            try { localStorage.setItem('ctd_theme', themeName); } catch(e) {}
             document.body.classList.remove(...availableThemes.map(t => `theme-${t}`));
             document.body.classList.add(`theme-${themeName}`);
             const select = document.getElementById('headerThemeSelect');
             if (select) select.value = themeName;
 
-            // Обновляем бегущую строку и бейджи под стиль выбранной темы
             renderLiveTicker();
             updateOnlineBadgeCount();
         };
@@ -2113,7 +2437,6 @@
         function updateOnlineBadgeCount() {
             const countBadge = document.getElementById('tickerOnlineCountBadge');
             if (countBadge) {
-                // Симулируем реалистичные колебания онлайна (45-65)
                 const baseOnline = 52 + Math.floor(Math.sin(Date.now() / 15000) * 7);
                 countBadge.innerText = `${baseOnline} ${currentLang === 'en' ? 'online' : 'онлайн'}`;
             }
@@ -2151,27 +2474,31 @@
         window.addLiveTickerEvent = async function(eventObj) {
             liveTickerEvents.unshift(eventObj);
             if (liveTickerEvents.length > 25) liveTickerEvents.pop();
-            localStorage.setItem('ctd_real_drops_cache', JSON.stringify(liveTickerEvents));
+            try { localStorage.setItem('ctd_real_drops_cache', JSON.stringify(liveTickerEvents)); } catch(e) {}
             renderLiveTicker();
 
             if (firestoreDb) {
                 try {
-                    const dropsDocRef = doc(firestoreDb, 'artifacts', appId, 'public', 'data', 'live_drops');
-                    await setDoc(dropsDocRef, {
-                        events: liveTickerEvents.slice(0, 15),
-                        timestamp: Date.now()
-                    });
+                    const dropsDocRef = getFirestoreDocRef('live_drops');
+                    if (dropsDocRef) {
+                        await setDoc(dropsDocRef, {
+                            events: liveTickerEvents.slice(0, 15),
+                            timestamp: Date.now()
+                        });
+                    }
                 } catch(e) {}
             }
         };
 
         window.clearLiveTickerDrops = function() {
             liveTickerEvents = [];
-            localStorage.removeItem('ctd_real_drops_cache');
+            try { localStorage.removeItem('ctd_real_drops_cache'); } catch(e) {}
             renderLiveTicker();
             if (firestoreDb) {
-                const dropsDocRef = doc(firestoreDb, 'artifacts', appId, 'public', 'data', 'live_drops');
-                setDoc(dropsDocRef, { events: [], timestamp: Date.now() }).catch(()=>{});
+                const dropsDocRef = getFirestoreDocRef('live_drops');
+                if (dropsDocRef) {
+                    setDoc(dropsDocRef, { events: [], timestamp: Date.now() }).catch(()=>{});
+                }
             }
             showToast(currentLang === 'en' ? 'Drops history cleared' : 'История дропов очищена', 'info');
         };
@@ -2479,9 +2806,7 @@
 
         window.toggleLanguage = function() {
             currentLang = currentLang === 'ru' ? 'en' : 'ru';
-            try {
-                localStorage.setItem('ctd_lang', currentLang);
-            } catch(e) {}
+            try { localStorage.setItem('ctd_lang', currentLang); } catch(e) {}
             applyTranslations();
             applyFilters();
             renderTradeSlots();
@@ -2575,9 +2900,7 @@
             if (!nick) return showToast(currentLang === 'en' ? 'Enter your nickname!' : 'Введите ваш никнейм!', 'warn');
 
             currentUserNick = nick;
-            try {
-                localStorage.setItem('ctd_user_nick', currentUserNick);
-            } catch(e) {}
+            try { localStorage.setItem('ctd_user_nick', currentUserNick); } catch(e) {}
             updatePlayerAccountUi();
             closeUserAuthModal();
             showToast(currentLang === 'en' ? `Profile updated: ${currentUserNick}` : `Профиль обновлен: ${currentUserNick}`, 'success');
@@ -2644,9 +2967,7 @@
             const pass = input ? input.value : '';
             if (pass === 'MalezCoolIopBest67') {
                 isMasterAdmin = true;
-                try {
-                    localStorage.setItem('ctd_is_admin', 'true');
-                } catch(e) {}
+                try { localStorage.setItem('ctd_is_admin', 'true'); } catch(e) {}
                 updateAdminUi();
                 closeAdminPasswordModal();
                 showToast(currentLang === 'en' ? 'Welcome, Master Admin!' : 'Добро пожаловать, Главный Администратор!', 'success');
@@ -2658,9 +2979,7 @@
 
         window.logoutAdmin = function() {
             isMasterAdmin = false;
-            try {
-                localStorage.removeItem('ctd_is_admin');
-            } catch(e) {}
+            try { localStorage.removeItem('ctd_is_admin'); } catch(e) {}
             updateAdminUi();
             switchMainTab('home');
             showToast(currentLang === 'en' ? 'Logged out from Admin mode' : 'Вы вышли из режима администратора', 'info');
@@ -2737,150 +3056,6 @@
             if (subTab === 'crates') renderAdminCratesList();
         };
 
-        export async function initFirebase() {
-            const cloudBadge = document.getElementById('headerCloudBadge');
-            const cloudText = document.getElementById('headerCloudText');
-            const adminBadge = document.getElementById('adminDbStatusBadge');
-            const adminLog = document.getElementById('adminCloudLog');
-
-            try {
-                if (!firebaseApp) {
-                    firebaseApp = initializeApp(rawFirebaseConfig);
-                }
-                firebaseAuth = getAuth(firebaseApp);
-                if (initialAuthToken) {
-                    try {
-                        await signInWithCustomToken(firebaseAuth, initialAuthToken);
-                    } catch(e) {
-                        await signInAnonymously(firebaseAuth);
-                    }
-                } else {
-                    await signInAnonymously(firebaseAuth);
-                }
-
-                firestoreDb = getFirestore(firebaseApp);
-                
-                // Строгий путь документа: 6 сегментов (/artifacts/{appId}/public/data/{collection}/{docId})
-                const catalogDocRef = doc(firestoreDb, 'artifacts', appId, 'public', 'data', 'catalog_data', 'main');
-
-                onSnapshot(catalogDocRef, (snapshot) => {
-                    if (snapshot.exists()) {
-                        const data = snapshot.data();
-                        const remoteTs = data.updatedAt || 0;
-                        const localTs = parseInt(localStorage.getItem('ctd_last_local_ts') || '0', 10);
-
-                        if (remoteTs >= localTs) {
-                            if (Array.isArray(data.items) && data.items.length > 0) {
-                                catalogItems = data.items;
-                                catalogItems.forEach(u => {
-                                    if (u.gameValue === undefined || u.gameValue === null) u.gameValue = u.value || 0;
-                                    if (u.limit === undefined) u.limit = "—";
-                                    if (u.summon === undefined) u.summon = "—";
-                                });
-                                try {
-                                    localStorage.setItem('ctd_catalog_data', JSON.stringify(catalogItems));
-                                } catch(e) {}
-                            }
-                            if (Array.isArray(data.crates) && data.crates.length > 0) {
-                                cratesList = data.crates;
-                                try {
-                                    localStorage.setItem('ctd_crates_data', JSON.stringify(cratesList));
-                                } catch(e) {}
-                            }
-                            if (data.wiki && typeof data.wiki === 'object') {
-                                wikiStats = data.wiki;
-                                try {
-                                    localStorage.setItem('ctd_wiki_data', JSON.stringify(wikiStats));
-                                } catch(e) {}
-                            }
-                            applyFilters();
-                            updateStats();
-                            renderWikiList();
-                            renderCratesView();
-                            renderUpgraderBottomList();
-                            renderHomeWidgets();
-                        }
-                    } else {
-                        forceSyncToCloud(false);
-                    }
-
-                    if (cloudBadge) cloudBadge.className = "text-[9px] font-bold px-1.5 py-0.2 rounded themed-online-badge flex items-center gap-1";
-                    if (cloudText) cloudText.innerText = currentLang === 'en' ? "Online (Firestore)" : "Онлайн (Firestore)";
-                    if (adminBadge) {
-                        adminBadge.innerText = "Online (Firestore)";
-                        adminBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
-                    }
-                    if (adminLog) adminLog.innerText = `🟢 Firestore подключен успешно! (${new Date().toLocaleTimeString()})`;
-                }, (err) => {
-                    if (cloudText) cloudText.innerText = currentLang === 'en' ? "Local Cache" : "Локальный кэш";
-                    if (adminLog) adminLog.innerText = `⚠️ Локальный кэш активен (${err.message})`;
-                });
-
-                // Слушаем живые дропы игроков
-                const dropsDocRef = doc(firestoreDb, 'artifacts', appId, 'public', 'data', 'live_drops_data', 'main');
-                onSnapshot(dropsDocRef, (snapshot) => {
-                    if (snapshot.exists()) {
-                        const data = snapshot.data();
-                        if (Array.isArray(data.events)) {
-                            liveTickerEvents = data.events;
-                            try {
-                                localStorage.setItem('ctd_real_drops_cache', JSON.stringify(liveTickerEvents));
-                            } catch(e) {}
-                            renderLiveTicker();
-                        }
-                    }
-                }, () => {});
-
-            } catch(err) {
-                if (adminLog) adminLog.innerText = `⚠️ Локальное хранилище (${err.message})`;
-            }
-        }
-        window.initFirebase = initFirebase;
-
-        window.forceSyncToCloud = async function(showFeedback = true) {
-            const logEl = document.getElementById('adminCloudLog');
-            if (!firestoreDb || !firebaseAuth?.currentUser) {
-                if (showFeedback) showToast(currentLang === 'en' ? "Saved to local browser cache" : "База сохранена в локальный кэш браузера", "info");
-                return;
-            }
-            try {
-                const now = Date.now();
-                lastLocalChangeTimestamp = now;
-                try {
-                    localStorage.setItem('ctd_last_local_ts', now.toString());
-                } catch(e) {}
-
-                const catalogDocRef = doc(firestoreDb, 'artifacts', appId, 'public', 'data', 'catalog_data', 'main');
-                await setDoc(catalogDocRef, {
-                    items: catalogItems,
-                    crates: cratesList,
-                    wiki: wikiStats,
-                    updatedAt: now
-                });
-                if (logEl) logEl.innerText = `🟢 База успешно записана в Google Cloud Firestore! (${catalogItems.length} юнитов)`;
-                if (showFeedback) showToast(currentLang === 'en' ? 'Database synced to cloud!' : 'База сохранена в облаке для всех игроков!', 'success');
-            } catch(err) {
-                if (logEl) logEl.innerText = `❌ Ошибка: ${err.message}`;
-                if (showFeedback) showToast(`Ошибка записи: ${err.message}`, 'error');
-            }
-        };
-
-        window.testFirebaseRead = async function() {
-            if (!firestoreDb || !firebaseAuth?.currentUser) return showToast(currentLang === 'en' ? "Firestore not connected" : "Firestore не подключен", "warn");
-            try {
-                const catalogDocRef = doc(firestoreDb, 'artifacts', appId, 'public', 'data', 'catalog_data', 'main');
-                const snap = await getDoc(catalogDocRef);
-                if (snap.exists()) {
-                    const data = snap.data();
-                    showToast(`В облаке: ${data.items?.length || 0} юнитов, ${data.crates?.length || 0} кейсов`, 'success');
-                } else {
-                    showToast('Документ в Firestore пока пуст.', 'warn');
-                }
-            } catch(err) {
-                showToast(`Ошибка: ${err.message}`, 'error');
-            }
-        };
-
         window.openItemModal = function(unitId = null) {
             uploadedBase64Image = "";
             const idField = document.getElementById('itemEditId');
@@ -2896,10 +3071,9 @@
             const summonInput = document.getElementById('itemSummonInput');
             const trendSelect = document.getElementById('itemTrendSelect');
             const imgInput = document.getElementById('itemImgInput');
-            const fileInput = document.getElementById('itemFileInput');
             const titleEl = document.getElementById('itemModalTitle');
-
-            if (fileInput) fileInput.value = '';
+            const compressNotice = document.getElementById('imgCompressNotice');
+            if (compressNotice) compressNotice.classList.add('hidden');
 
             if (unitId) {
                 const unit = catalogItems.find(u => u.id === unitId);
@@ -2920,6 +3094,7 @@
                     titleEl.innerText = `${currentLang === 'en' ? 'Edit Unit:' : 'Редактировать:'} ${unit.name}`;
                 }
             } else {
+                // Чистый дефолт: нет лимитов, саммона и уровней
                 idField.value = '';
                 nameInput.value = '';
                 raritySelect.value = 'RARE';
@@ -2958,47 +3133,16 @@
             if (input) input.disabled = checked;
         };
 
-        function compressImageFile(file, maxDimension = 180, quality = 0.85) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        let width = img.width;
-                        let height = img.height;
-                        if (width > height) {
-                            if (width > maxDimension) {
-                                height = Math.round((height * maxDimension) / width);
-                                width = maxDimension;
-                            }
-                        } else {
-                            if (height > maxDimension) {
-                                width = Math.round((width * maxDimension) / height);
-                                height = maxDimension;
-                            }
-                        }
-                        const canvas = document.createElement('canvas');
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/png', quality));
-                    };
-                    img.onerror = () => resolve(event.target.result);
-                    img.src = event.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        window.handleImageFileUpload = async function(e) {
+        window.handleImageFileUpload = function(e) {
             const file = e.target.files?.[0];
             if (!file) return;
-            showToast(currentLang === 'en' ? 'Optimizing image...' : 'Оптимизация изображения...', 'info');
-            const compressed = await compressImageFile(file, 180);
-            uploadedBase64Image = compressed;
-            const imgInput = document.getElementById('itemImgInput');
-            if (imgInput) imgInput.value = uploadedBase64Image;
+            compressUploadedImage(file, (compressedBase64) => {
+                uploadedBase64Image = compressedBase64;
+                const imgInput = document.getElementById('itemImgInput');
+                if (imgInput) imgInput.value = uploadedBase64Image;
+                const compressNotice = document.getElementById('imgCompressNotice');
+                if (compressNotice) compressNotice.classList.remove('hidden');
+            });
         };
 
         window.saveItemFromModal = function() {
@@ -3024,8 +3168,6 @@
                 const img = (document.getElementById('itemImgInput')?.value || '').trim() || 'https://placehold.co/180x180/0f172a/38bdf8?text=' + encodeURIComponent(name);
 
                 const editId = idField ? idField.value : null;
-                const now = Date.now();
-                lastLocalChangeTimestamp = now;
 
                 if (editId) {
                     const idNum = parseInt(editId, 10);
@@ -3035,7 +3177,7 @@
                         showToast(currentLang === 'en' ? `Unit ${name} updated!` : `Персонаж ${name} обновлен!`, 'success');
                     }
                 } else {
-                    const newId = now;
+                    const newId = Date.now();
                     const newUnit = {
                         id: newId,
                         name,
@@ -3054,35 +3196,28 @@
                         img
                     };
                     catalogItems.push(newUnit);
-
                     wikiStats[newId] = { levels: [] };
-                    try {
-                        localStorage.setItem('ctd_wiki_data', JSON.stringify(wikiStats));
-                    } catch(e) {}
-
+                    try { localStorage.setItem('ctd_wiki_data', JSON.stringify(wikiStats)); } catch(e) {}
                     showToast(currentLang === 'en' ? `Unit ${name} added!` : `Персонаж ${name} добавлен в каталог!`, 'success');
                 }
 
-                // Защищенная запись в localStorage
-                try {
-                    localStorage.setItem('ctd_last_local_ts', now.toString());
-                    localStorage.setItem('ctd_catalog_data', JSON.stringify(catalogItems));
-                } catch(storageErr) {
-                    console.warn("Storage quota limit reached, saving in active state:", storageErr);
-                }
-
+                try { localStorage.setItem('ctd_catalog_data', JSON.stringify(catalogItems)); } catch(e) {}
+                
+                // Закрываем модалку в первую очередь
                 closeItemModal();
+
                 applyFilters();
                 updateStats();
                 renderWikiList();
                 renderUpgraderBottomList();
                 renderHomeWidgets();
-                forceSyncToCloud(false);
 
-            } catch(fatalErr) {
-                console.error("Save error:", fatalErr);
+                // Отправляем в Firestore
+                forceSyncToCloud(false);
+            } catch(err) {
+                console.error("Save Item Error:", err);
                 closeItemModal();
-                showToast(`Ошибка сохранения: ${fatalErr.message}`, 'error');
+                showToast(`Ошибка сохранения: ${err.message}`, 'error');
             }
         };
 
@@ -3091,16 +3226,8 @@
             const ok = await customConfirm(currentLang === 'en' ? 'Delete Unit' : 'Удаление персонажа', currentLang === 'en' ? `Delete "${unit?.name || 'unit'}"?` : `Вы уверены, что хотите удалить "${unit?.name || 'юнит'}"?`);
             if (!ok) return;
 
-            const now = Date.now();
-            lastLocalChangeTimestamp = now;
-            try {
-                localStorage.setItem('ctd_last_local_ts', now.toString());
-            } catch(e) {}
-
             catalogItems = catalogItems.filter(u => u.id !== id);
-            try {
-                localStorage.setItem('ctd_catalog_data', JSON.stringify(catalogItems));
-            } catch(e) {}
+            try { localStorage.setItem('ctd_catalog_data', JSON.stringify(catalogItems)); } catch(e) {}
             applyFilters();
             updateStats();
             renderWikiList();
@@ -3226,6 +3353,7 @@
                                 <span class="font-mono font-bold text-amber-400">${unit.isDemNA || unit.demand === null ? 'N/A' : unit.demand + '/10 🔥'}</span>
                             </div>
 
+                            <!-- Быстрые действия с персонажем -->
                             <div class="grid grid-cols-2 gap-1 pt-1">
                                 <button onclick="handleQuickSelectTarget(${unit.id})" class="py-1 px-1 bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 rounded-lg text-[10px] font-bold text-center transition flex items-center justify-center gap-0.5">
                                     <span>🎯</span> <span>${currentLang === 'en' ? 'Target' : 'Цель'}</span>
@@ -3242,9 +3370,7 @@
 
         window.setTradeSlotCount = function(count) {
             currentTradeSlotCount = count;
-            try {
-                localStorage.setItem('ctd_trade_slot_count', count.toString());
-            } catch(e) {}
+            try { localStorage.setItem('ctd_trade_slot_count', count.toString()); } catch(e) {}
 
             [6, 8, 10].forEach(n => {
                 const btn = document.getElementById(`slotCountBtn${n}`);
@@ -3623,20 +3749,20 @@
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Темный диск
+            // Темный диск основы
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius + 14, 0, Math.PI * 2);
             ctx.fillStyle = '#060a12';
             ctx.fill();
 
-            // Рельс колеса
+            // Круговой рельс (черный сектор)
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
             ctx.strokeStyle = '#152033';
             ctx.lineWidth = 14;
             ctx.stroke();
 
-            // Зеленый сектор победы: начинается ровно в 12:00 (-Math.PI/2)
+            // Зеленый победный сектор: строго с 12:00 (-PI/2) по часовой стрелке
             const chancePct = upgraderState.winChance || 0;
             const winAngleSpan = (chancePct / 100) * (Math.PI * 2);
 
@@ -3656,16 +3782,17 @@
                 ctx.shadowBlur = 0;
             }
 
-            // Стрелка: угол 0 соответствует ровно 12:00 (-Math.PI / 2)
+            // ТОЧНАЯ СИНХРОНИЗАЦИЯ СТРЕЛКИ (pointerAngle = 0 указывает строго в 12:00 на начало зеленого сектора)
             const arrowAngle = -Math.PI / 2 + pointerAngle;
             ctx.save();
             ctx.translate(centerX, centerY);
             ctx.rotate(arrowAngle);
 
+            // Стрелка снаружи, направленная острием внутрь на обод
             ctx.beginPath();
-            ctx.moveTo(radius + 2, 0);
-            ctx.lineTo(radius + 16, -7);
-            ctx.lineTo(radius + 16, 7);
+            ctx.moveTo(radius - 2, 0);
+            ctx.lineTo(radius + 15, -7);
+            ctx.lineTo(radius + 15, 7);
             ctx.closePath();
             
             ctx.fillStyle = '#fbbf24';
@@ -3698,11 +3825,12 @@
                 btn.classList.add('opacity-50', 'cursor-not-allowed');
             }
 
-            // Честный расчет исхода
+            // Математический расчет победы
             const isWin = (Math.random() * 100) <= upgraderState.winChance;
             const winSpan = (upgraderState.winChance / 100) * (Math.PI * 2);
             
-            // Фиксация посадки стрелки строго в соответствии с победой / поражением
+            // Если выигрыш — стрелка 100% останавливается внутри зеленой дуги
+            // Если проигрыш — стрелка 100% останавливается на темной дорожке
             let landingAngle = 0;
             if (isWin) {
                 landingAngle = Math.random() * (winSpan * 0.88) + (winSpan * 0.06);
@@ -3776,9 +3904,7 @@
                 showToast(currentLang === 'en' ? `💥 Upgrade failed. Bet lost!` : `💥 Неудача. Ставка сгорела!`, 'error');
             }
 
-            try {
-                localStorage.setItem('ctd_inventory_data', JSON.stringify(userInventory));
-            } catch(e) {}
+            try { localStorage.setItem('ctd_inventory_data', JSON.stringify(userInventory)); } catch(e) {}
             updateUserBalanceDisplay();
             renderInventory();
             renderUpgraderBottomList();
@@ -3900,9 +4026,7 @@
             if (existing) existing.qty += 1;
             else userInventory.push({ unitId: unit.id, qty: 1 });
 
-            try {
-                localStorage.setItem('ctd_inventory_data', JSON.stringify(userInventory));
-            } catch(e) {}
+            try { localStorage.setItem('ctd_inventory_data', JSON.stringify(userInventory)); } catch(e) {}
             playAudioCoins();
             renderInventory();
             renderUpgraderBottomList();
@@ -4064,9 +4188,7 @@
                         const existing = userInventory.find(i => i.unitId === winner.id);
                         if (existing) existing.qty += 1;
                         else userInventory.push({ unitId: winner.id, qty: 1 });
-                        try {
-                            localStorage.setItem('ctd_inventory_data', JSON.stringify(userInventory));
-                        } catch(e) {}
+                        try { localStorage.setItem('ctd_inventory_data', JSON.stringify(userInventory)); } catch(e) {}
                         renderInventory();
                         renderUpgraderBottomList();
                     }
@@ -4227,9 +4349,7 @@
 
             if (!wikiStats[unitId]) wikiStats[unitId] = { levels: [] };
             wikiStats[unitId].levels.push({ level, cost, damage, cooldown, range });
-            try {
-                localStorage.setItem('ctd_wiki_data', JSON.stringify(wikiStats));
-            } catch(e) {}
+            try { localStorage.setItem('ctd_wiki_data', JSON.stringify(wikiStats)); } catch(e) {}
             closeWikiLevelModal();
             renderWikiDetails();
             forceSyncToCloud(false);
@@ -4239,9 +4359,7 @@
         window.deleteWikiLevel = function(unitId, idx) {
             if (wikiStats[unitId]?.levels) {
                 wikiStats[unitId].levels.splice(idx, 1);
-                try {
-                    localStorage.setItem('ctd_wiki_data', JSON.stringify(wikiStats));
-                } catch(e) {}
+                try { localStorage.setItem('ctd_wiki_data', JSON.stringify(wikiStats)); } catch(e) {}
                 renderWikiDetails();
                 forceSyncToCloud(false);
             }
@@ -4660,10 +4778,7 @@
             const costValInput = document.getElementById('crateCostValueInput');
             const descInput = document.getElementById('crateDescInput');
             const imgInput = document.getElementById('crateImgInput');
-            const fileInput = document.getElementById('crateFileInput');
             const titleEl = document.getElementById('crateBuilderTitle');
-
-            if (fileInput) fileInput.value = '';
 
             let currentCrateItems = {};
 
@@ -4736,14 +4851,14 @@
             }
         };
 
-        window.handleCrateImageUpload = async function(e) {
+        window.handleCrateImageUpload = function(e) {
             const file = e.target.files?.[0];
             if (!file) return;
-            showToast(currentLang === 'en' ? 'Optimizing crate image...' : 'Оптимизация изображения кейса...', 'info');
-            const compressed = await compressImageFile(file, 180);
-            uploadedCrateBase64Image = compressed;
-            const imgInput = document.getElementById('crateImgInput');
-            if (imgInput) imgInput.value = uploadedCrateBase64Image;
+            compressUploadedImage(file, (compressedBase64) => {
+                uploadedCrateBase64Image = compressedBase64;
+                const imgInput = document.getElementById('crateImgInput');
+                if (imgInput) imgInput.value = uploadedCrateBase64Image;
+            });
         };
 
         window.updateCrateTotalChanceSum = function() {
@@ -4808,9 +4923,7 @@
                 showToast(currentLang === 'en' ? `Crate created: ${name}` : `Кейс создан: ${name}`, 'success');
             }
 
-            try {
-                localStorage.setItem('ctd_crates_data', JSON.stringify(cratesList));
-            } catch(e) {}
+            try { localStorage.setItem('ctd_crates_data', JSON.stringify(cratesList)); } catch(e) {}
             closeCrateBuilderModal();
             renderCratesView();
             renderAdminCratesList();
@@ -4852,9 +4965,7 @@
 
             cratesList = cratesList.filter(c => c.id !== crateId);
             if (activeCrateId === crateId) activeCrateId = cratesList[0]?.id || null;
-            try {
-                localStorage.setItem('ctd_crates_data', JSON.stringify(cratesList));
-            } catch(e) {}
+            try { localStorage.setItem('ctd_crates_data', JSON.stringify(cratesList)); } catch(e) {}
             renderCratesView();
             renderAdminCratesList();
             renderHomeWidgets();
@@ -5011,9 +5122,7 @@
 
             userValBalance += payout;
             updateUserBalanceDisplay();
-            try {
-                localStorage.setItem('ctd_inventory_data', JSON.stringify(userInventory));
-            } catch(e) {}
+            try { localStorage.setItem('ctd_inventory_data', JSON.stringify(userInventory)); } catch(e) {}
             playAudioCoins();
             renderInventory();
             renderUpgraderBottomList();
@@ -5041,18 +5150,14 @@
             if (item.qty <= 0) {
                 userInventory = userInventory.filter(i => i.unitId !== unitId);
             }
-            try {
-                localStorage.setItem('ctd_inventory_data', JSON.stringify(userInventory));
-            } catch(e) {}
+            try { localStorage.setItem('ctd_inventory_data', JSON.stringify(userInventory)); } catch(e) {}
             renderInventory();
             renderUpgraderBottomList();
         };
 
         window.removeInvItem = function(unitId) {
             userInventory = userInventory.filter(i => i.unitId !== unitId);
-            try {
-                localStorage.setItem('ctd_inventory_data', JSON.stringify(userInventory));
-            } catch(e) {}
+            try { localStorage.setItem('ctd_inventory_data', JSON.stringify(userInventory)); } catch(e) {}
             renderInventory();
             renderUpgraderBottomList();
             showToast(currentLang === 'en' ? 'Item removed from collection' : 'Персонаж удален из коллекции', 'info');
@@ -5063,9 +5168,7 @@
             const ok = await customConfirm(currentLang === 'en' ? 'Clear Inventory' : 'Очистить инвентарь', currentLang === 'en' ? 'Are you sure you want to clear your collection?' : 'Вы уверены, что хотите полностью очистить свой инвентарь?');
             if (!ok) return;
             userInventory = [];
-            try {
-                localStorage.removeItem('ctd_inventory_data');
-            } catch(e) {}
+            try { localStorage.removeItem('ctd_inventory_data'); } catch(e) {}
             renderInventory();
             renderUpgraderBottomList();
             showToast(currentLang === 'en' ? 'Inventory cleared' : 'Инвентарь очищен', 'info');
@@ -5231,9 +5334,7 @@
                 sellPercent: sellPct
             };
 
-            try {
-                localStorage.setItem('ctd_admin_economy', JSON.stringify(adminSettings));
-            } catch(e) {}
+            try { localStorage.setItem('ctd_admin_economy', JSON.stringify(adminSettings)); } catch(e) {}
             updateBailoutButtonStatus();
             showToast(currentLang === 'en' ? 'Economy settings saved!' : 'Параметры экономики сохранены!', 'success');
         };
@@ -5264,9 +5365,7 @@
         window.saveDiscordWebhook = function() {
             const url = (document.getElementById('discordWebhookInput')?.value || '').trim();
             discordWebhookUrl = url;
-            try {
-                localStorage.setItem('ctd_discord_webhook', url);
-            } catch(e) {}
+            try { localStorage.setItem('ctd_discord_webhook', url); } catch(e) {}
             showToast(currentLang === 'en' ? 'Discord Webhook saved!' : 'Discord Webhook сохранен!', 'success');
             updateDiscordBadge();
         };
@@ -5373,6 +5472,7 @@
             renderUpgraderBottomList();
             drawUpgraderWheel(0);
             renderHomeWidgets();
+            initTelegramIntegration();
             initFirebase();
         }
 
