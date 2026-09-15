@@ -524,7 +524,7 @@
             <div id="catalogGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-2.5 sm:gap-3.5"></div>
         </section>
 
-        <!-- СЕКЦИЯ 2: АПГРЕЙДЕР (UPGRADER — С ЗАЩИТОЙ ОТ ДЮПА И ФАНТОМНЫХ ЮНИТОВ) -->
+        <!-- СЕКЦИЯ 2: АПГРЕЙДЕР -->
         <section id="upgraderSection" class="hidden space-y-4">
             <div class="bg-dark-900 border border-dark-border rounded-3xl p-3.5 sm:p-6 space-y-5 shadow-2xl relative overflow-hidden transition-colors">
                 
@@ -889,9 +889,7 @@
                     </div>
 
                     <!-- Вердикт дуэли -->
-                    <div id="pvpVerdictBanner" class="p-3.5 rounded-xl text-center font-black text-sm sm:text-base border border-amber-500/40 bg-amber-500/10 text-amber-300">
-                        <!-- Заполняется в JS -->
-                    </div>
+                    <div id="pvpVerdictBanner" class="p-3.5 rounded-xl text-center font-black text-sm sm:text-base border border-amber-500/40 bg-amber-500/10 text-amber-300"></div>
                 </div>
             </div>
         </section>
@@ -2159,7 +2157,6 @@
 
                 firestoreDb = getFirestore(firebaseApp);
 
-                // Регистрируем текущего игрока в облачной базе для админ-панели
                 registerPlayerInCloud();
 
                 // Слушатель каталога
@@ -2242,6 +2239,7 @@
 
             } catch(err) {
                 isCloudConnected = false;
+                if (cloudText) cloudText.innerText = currentLang === 'en' ? "Offline (Cache)" : "Оффлайн (Кэш)";
                 if (adminLog) adminLog.innerText = `⚠️ Ошибка инициализации: ${err.message}`;
             }
         }
@@ -2267,7 +2265,6 @@
             const tbody = document.getElementById('adminPlayersTableBody');
             if (!tbody) return;
 
-            // Локальный игрок всегда первый
             let players = [{
                 nick: currentUserNick,
                 tgUsername: telegramUserTag,
@@ -2278,7 +2275,6 @@
 
             if (firestoreDb) {
                 try {
-                    // Пытаемся считать глобальный список игроков
                     const playersRef = collection(firestoreDb, 'cameraman_td');
                     const snapshot = await getDocs(playersRef);
                     snapshot.forEach(docSnap => {
@@ -2673,7 +2669,6 @@
             }, 0);
             const youCount = userInventory.reduce((acc, i) => acc + i.qty, 0);
 
-            // Имитируем сопоставление со случайным игроком или базой
             const oppNet = Math.max(100, Math.round(youNet * (0.65 + Math.random() * 0.75)));
             const oppGame = Math.max(100, Math.round(youGame * (0.65 + Math.random() * 0.75)));
             const oppCount = Math.max(1, Math.round(youCount * (0.7 + Math.random() * 0.6)));
@@ -3075,6 +3070,7 @@
             renderCratesView();
             renderWikiList();
             renderUpgraderBottomList();
+            renderHomeWidgets();
             renderLiveTicker();
             updateBailoutButtonStatus();
             showToast(currentLang === 'ru' ? 'Язык: Русский' : 'Language: English', 'info');
@@ -3316,6 +3312,7 @@
                         : "px-3.5 py-1.5 rounded-xl text-xs font-bold transition bg-dark-950 border border-dark-border text-slate-400 hover:text-white";
                 }
             });
+            
             if (subTab === 'players') renderAdminPlayersList();
             if (subTab === 'units') updateStats();
             if (subTab === 'crates') renderAdminCratesList();
@@ -3339,1120 +3336,6 @@
             const titleEl = document.getElementById('itemModalTitle');
             const compressNotice = document.getElementById('imgCompressNotice');
             if (compressNotice) compressNotice.classList.add('hidden');
-
-            if (unitId) {
-                const unit = catalogItems.find(u => u.id === unitId);
-                if (unit) {
-                    idField.value = unit.id;
-                    nameInput.value = unit.name;
-                    raritySelect.value = unit.rarity;
-                    categorySelect.value = unit.category || 'combat';
-                    valInput.value = unit.value;
-                    gameValInput.value = unit.gameValue !== undefined ? unit.gameValue : unit.value;
-                    valNACheck.checked = !!unit.isValNA;
-                    demInput.value = unit.demand !== null ? unit.demand : 5;
-                    demNACheck.checked = !!unit.isDemNA;
-                    limitInput.value = (unit.limit === '—' || !unit.limit) ? '' : unit.limit;
-                    summonInput.value = (unit.summon === '—' || !unit.summon) ? '' : unit.summon;
-                    trendSelect.value = unit.trend || 'stable';
-                    imgInput.value = unit.img || '';
-                    titleEl.innerText = `${currentLang === 'en' ? 'Edit Unit:' : 'Редактировать:'} ${unit.name}`;
-                }
-            } else {
-                        <div class="mt-2 pt-2 border-t border-dark-border/60 space-y-1.5">
-                            <div class="flex items-center justify-between text-xs font-mono">
-                                <span class="text-slate-400 font-sans text-[10px]" title="Trade Value">Trade Val:</span>
-                                <span class="font-black text-cyan-400">${unit.isValNA ? '0 (N/A)' : tradeVal.toLocaleString()}</span>
-                            </div>
-                            <div class="flex items-center justify-between text-xs font-mono">
-                                <span class="text-slate-400 font-sans text-[10px]" title="Game Value">Game Val:</span>
-                                <span class="font-black text-emerald-400">${gameVal.toLocaleString()} 🪙</span>
-                            </div>
-
-                            <div class="flex items-center justify-between text-[11px]">
-                                <span class="text-slate-400 text-[10px]">${currentLang === 'en' ? 'Demand:' : 'Спрос:'}</span>
-                                <span class="font-mono font-bold text-amber-400">${unit.isDemNA || unit.demand === null ? 'N/A' : unit.demand + '/10 🔥'}</span>
-                            </div>
-
-                            <!-- Быстрые действия с персонажем -->
-                            <div class="grid grid-cols-2 gap-1 pt-1">
-                                <button onclick="handleQuickSelectTarget(${unit.id})" class="py-1 px-1 bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 rounded-lg text-[10px] font-bold text-center transition flex items-center justify-center gap-0.5">
-                                    <span>🎯</span> <span>${currentLang === 'en' ? 'Target' : 'Цель'}</span>
-                                </button>
-                                <button onclick="quickSendInvToTrade(${unit.id}, 'you')" class="py-1 px-1 bg-blue-600/20 hover:bg-blue-600/40 text-cyan-300 rounded-lg text-[10px] font-bold text-center transition flex items-center justify-center gap-0.5">
-                                    <span>⚖️</span> <span>${currentLang === 'en' ? 'Trade' : 'Трейд'}</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        };
-
-        window.setTradeSlotCount = function(count) {
-            currentTradeSlotCount = count;
-            try { localStorage.setItem('ctd_trade_slot_count', count.toString()); } catch(e) {}
-
-            [6, 8, 10].forEach(n => {
-                const btn = document.getElementById(`slotCountBtn${n}`);
-                if (btn) {
-                    btn.className = (n === count)
-                        ? "px-2.5 py-1 rounded-lg font-bold bg-blue-600 text-white shadow-sm transition"
-                        : "px-2.5 py-1 rounded-lg font-bold text-slate-400 transition hover:text-white";
-                }
-            });
-
-            tradeState.you.length = count;
-            tradeState.them.length = count;
-            for (let i = 0; i < count; i++) {
-                if (tradeState.you[i] === undefined) tradeState.you[i] = null;
-                if (tradeState.them[i] === undefined) tradeState.them[i] = null;
-            }
-
-            renderTradeSlots();
-        };
-
-        window.renderTradeSlots = function() {
-            const youGrid = document.getElementById('youSlotsGrid');
-            const themGrid = document.getElementById('themSlotsGrid');
-            if (!youGrid || !themGrid) return;
-
-            const renderSide = (side) => {
-                return tradeState[side].map((slot, idx) => {
-                    if (!slot) {
-                        return `
-                            <div onclick="openUnitPickerSlot('${side}', ${idx})" class="h-24 sm:h-28 rounded-xl border-2 border-dashed border-dark-border hover:border-blue-500/80 bg-dark-950/60 hover:bg-dark-950 flex flex-col items-center justify-center cursor-pointer transition group shadow-inner">
-                                <span class="text-xl text-slate-500 group-hover:text-blue-400 transition">+</span>
-                                <span class="text-[10px] font-bold text-slate-500 group-hover:text-slate-300">${currentLang === 'en' ? 'Slot' : 'Слот'} ${idx + 1}</span>
-                            </div>
-                        `;
-                    }
-
-                    const valTotal = window.getUnitTradeValue(slot.unit) * slot.qty;
-                    return `
-                        <div class="h-24 sm:h-28 rounded-xl border border-rarity-${slot.unit.rarity} bg-dark-900 p-1.5 flex flex-col justify-between relative shadow-md group">
-                            <button onclick="removeTradeSlotItem('${side}', ${idx})" class="absolute top-1 right-1 w-4 h-4 rounded-full bg-dark-950 text-rose-400 hover:text-white hover:bg-rose-600 flex items-center justify-center text-[10px] z-10 transition">✕</button>
-
-                            <div class="w-full h-11 flex items-center justify-center overflow-hidden">
-                                <img src="${slot.unit.img}" class="max-h-full max-w-full object-contain pointer-events-none" alt="">
-                            </div>
-
-                            <div class="text-center overflow-hidden">
-                                <span class="text-[10px] font-bold text-white truncate block">${slot.unit.name}</span>
-                                <span class="text-[10px] font-mono font-bold text-cyan-400">${slot.unit.isValNA ? '0 (N/A)' : valTotal.toLocaleString()}</span>
-                            </div>
-
-                            <div class="flex items-center justify-between bg-dark-950 px-1 py-0.5 rounded border border-dark-border/60">
-                                <button onclick="adjustTradeSlotQty('${side}', ${idx}, -1)" class="text-slate-400 hover:text-white font-bold text-xs px-1">-</button>
-                                <span class="text-[10px] font-mono font-bold text-white">x${slot.qty}</span>
-                                <button onclick="adjustTradeSlotQty('${side}', ${idx}, 1)" class="text-slate-400 hover:text-white font-bold text-xs px-1">+</button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            };
-
-            youGrid.innerHTML = renderSide('you');
-            themGrid.innerHTML = renderSide('them');
-            calculateTradeVerdict();
-        };
-
-        window.openUnitPickerSlot = function(side, idx) {
-            activePickerMode = 'trade';
-            activeTargetSlotSide = side;
-            activeTargetSlotIndex = idx;
-            const sideTitle = side === 'you' ? (currentLang === 'en' ? 'You' : 'Ты') : (currentLang === 'en' ? 'Them' : 'Они');
-            document.getElementById('pickerModalTitle').innerText = `${currentLang === 'en' ? 'Select unit for' : 'Выберите персонажа'} (${sideTitle} • ${currentLang === 'en' ? 'Slot' : 'Слот'} ${idx + 1})`;
-            renderUnitPickerList();
-            document.getElementById('unitPickerModal')?.classList.remove('hidden');
-        };
-
-        window.closeUnitPicker = function() {
-            document.getElementById('unitPickerModal')?.classList.add('hidden');
-        };
-
-        window.renderUnitPickerList = function() {
-            const grid = document.getElementById('pickerGrid');
-            if (!grid) return;
-            const query = (document.getElementById('pickerSearchInput')?.value || '').trim().toLowerCase();
-
-            const list = (activePickerMode === 'upg_source')
-                ? userInventory.map(i => catalogItems.find(u => u.id === i.unitId)).filter(Boolean)
-                : catalogItems;
-
-            const filtered = list.filter(u => !query || u.name.toLowerCase().includes(query));
-
-            grid.innerHTML = filtered.map(unit => {
-                const tradeVal = window.getUnitTradeValue(unit);
-                const gameVal = window.getUnitGameValue(unit);
-                return `
-                    <div onclick="selectUnitFromPicker(${unit.id})" class="p-2 rounded-xl bg-dark-950 border border-dark-border hover:border-blue-500 cursor-pointer transition flex items-center gap-2.5 unit-card-hover">
-                        <img src="${unit.img}" class="w-10 h-10 object-contain rounded-lg bg-dark-900 border border-dark-border p-0.5" alt="">
-                        <div class="overflow-hidden">
-                            <span class="text-[8px] font-black uppercase text-rarity-${unit.rarity} block">${unit.rarity}</span>
-                            <h5 class="text-xs font-bold text-white truncate">${unit.name}</h5>
-                            <span class="text-[10px] font-mono font-bold text-cyan-400">${unit.isValNA ? '0 Val' : tradeVal.toLocaleString()} (Trade)</span>
-                            <span class="text-[9px] font-mono font-bold text-emerald-400 block">${gameVal.toLocaleString()} 🪙 (Game)</span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        };
-
-        window.selectUnitFromPicker = function(unitId) {
-            const unit = catalogItems.find(u => u.id === unitId);
-            if (!unit) return;
-
-            if (activePickerMode === 'trade') {
-                tradeState[activeTargetSlotSide][activeTargetSlotIndex] = { unit, qty: 1 };
-                renderTradeSlots();
-            } else if (activePickerMode === 'upg_source') {
-                handleSelectAsSource(unit.id);
-            } else if (activePickerMode === 'upg_target') {
-                handleSelectAsTarget(unit.id);
-            }
-
-            closeUnitPicker();
-        };
-
-        window.removeTradeSlotItem = function(side, idx) {
-            tradeState[side][idx] = null;
-            renderTradeSlots();
-        };
-
-        window.adjustTradeSlotQty = function(side, idx, delta) {
-            if (tradeState[side][idx]) {
-                tradeState[side][idx].qty += delta;
-                if (tradeState[side][idx].qty <= 0) {
-                    tradeState[side][idx] = null;
-                }
-                renderTradeSlots();
-            }
-        };
-
-        window.clearTradeSide = function(side) {
-            tradeState[side] = new Array(currentTradeSlotCount).fill(null);
-            renderTradeSlots();
-        };
-
-        window.swapTradeSides = function() {
-            const temp = tradeState.you;
-            tradeState.you = tradeState.them;
-            tradeState.them = temp;
-            renderTradeSlots();
-            showToast(currentLang === 'en' ? 'Trade sides swapped ⇄' : 'Стороны трейда поменялись местами ⇄', 'info');
-        };
-
-        function calculateTradeVerdict() {
-            let youVal = 0, themVal = 0;
-            let hasNA = false;
-
-            tradeState.you.forEach(s => {
-                if (s) {
-                    if (s.unit.isValNA) hasNA = true;
-                    else youVal += window.getUnitTradeValue(s.unit) * s.qty;
-                }
-            });
-
-            tradeState.them.forEach(s => {
-                if (s) {
-                    if (s.unit.isValNA) hasNA = true;
-                    else themVal += window.getUnitTradeValue(s.unit) * s.qty;
-                }
-            });
-
-            document.getElementById('youTotalValDisplay').innerText = youVal.toLocaleString();
-            document.getElementById('themTotalValDisplay').innerText = themVal.toLocaleString();
-
-            const verdictEl = document.getElementById('tradeVerdictText');
-            const youBar = document.getElementById('youRatioBar');
-            const themBar = document.getElementById('themRatioBar');
-            const youShare = document.getElementById('youShareText');
-            const themShare = document.getElementById('themShareText');
-
-            const total = youVal + themVal;
-            const youPct = total > 0 ? Math.round((youVal / total) * 100) : 50;
-            const themPct = 100 - youPct;
-
-            if (youBar) youBar.style.width = `${youPct}%`;
-            if (themBar) themBar.style.width = `${themPct}%`;
-            if (youShare) youShare.innerText = `${currentLang === 'en' ? 'You' : 'Ты'}: ${youPct}%`;
-            if (themShare) themShare.innerText = `${currentLang === 'en' ? 'Them' : 'Они'}: ${themPct}%`;
-
-            if (!verdictEl) return;
-
-            if (total === 0) {
-                verdictEl.innerHTML = `<span>⚖️</span> <span>${currentLang === 'en' ? 'Add units to calculate' : 'Добавьте юнитов для расчета'}</span>`;
-                verdictEl.className = "text-sm sm:text-base font-black text-slate-400 flex items-center gap-2 mt-0.5";
-                return;
-            }
-
-            const diff = themVal - youVal;
-            const diffPct = youVal > 0 ? Math.round((diff / youVal) * 100) : (themVal > 0 ? 100 : 0);
-
-            if (hasNA) {
-                verdictEl.innerHTML = `<span>⚠️</span> <span>${currentLang === 'en' ? 'Trade contains N/A value units (Manual check)' : 'В сделке есть N/A предметы (Проверьте вручную)'}</span>`;
-                verdictEl.className = "text-sm sm:text-base font-black text-amber-400 flex items-center gap-2 mt-0.5";
-            } else if (diffPct >= 20) {
-                verdictEl.innerHTML = `<span>🚀</span> <span>${currentLang === 'en' ? 'BIG WIN' : 'ОГРОМНЫЙ ВИН'} (+${diff.toLocaleString()} Val / +${diffPct}%)</span>`;
-                verdictEl.className = "text-sm sm:text-base font-black text-emerald-400 flex items-center gap-2 mt-0.5";
-            } else if (diffPct >= 5) {
-                verdictEl.innerHTML = `<span>🟢</span> <span>${currentLang === 'en' ? 'WIN' : 'ВИН'} (+${diff.toLocaleString()} Val / +${diffPct}%)</span>`;
-                verdictEl.className = "text-sm sm:text-base font-black text-teal-400 flex items-center gap-2 mt-0.5";
-            } else if (diffPct >= -5) {
-                verdictEl.innerHTML = `<span>⚖️</span> <span>${currentLang === 'en' ? 'FAIR TRADE' : 'РАВНЫЙ ОБМЕН'} (${diff >= 0 ? '+' : ''}${diff.toLocaleString()} Val)</span>`;
-                verdictEl.className = "text-sm sm:text-base font-black text-cyan-400 flex items-center gap-2 mt-0.5";
-            } else if (diffPct >= -20) {
-                verdictEl.innerHTML = `<span>🔻</span> <span>${currentLang === 'en' ? 'LOSE' : 'НЕВЫГОДНО / LOSE'} (${diff.toLocaleString()} Val / ${diffPct}%)</span>`;
-                verdictEl.className = "text-sm sm:text-base font-black text-rose-400 flex items-center gap-2 mt-0.5";
-            } else {
-                verdictEl.innerHTML = `<span>💀</span> <span>${currentLang === 'en' ? 'MASSIVE LOSE' : 'СИЛЬНЫЙ СЛИВ / MASSIVE LOSE'} (${diff.toLocaleString()} Val)</span>`;
-                verdictEl.className = "text-sm sm:text-base font-black text-red-500 flex items-center gap-2 mt-0.5";
-            }
-        }
-
-        window.suggestFairItems = function() {
-            let youVal = 0, themVal = 0;
-            tradeState.you.forEach(s => { if (s && !s.unit.isValNA) youVal += window.getUnitTradeValue(s.unit) * s.qty; });
-            tradeState.them.forEach(s => { if (s && !s.unit.isValNA) themVal += window.getUnitTradeValue(s.unit) * s.qty; });
-
-            const diff = Math.abs(themVal - youVal);
-            if (diff === 0) return showToast(currentLang === 'en' ? 'Trade is already balanced!' : 'Сделка уже идеально сбалансирована!', 'info');
-
-            const targetSide = youVal > themVal ? 'them' : 'you';
-            const emptyIdx = tradeState[targetSide].findIndex(s => s === null);
-            if (emptyIdx === -1) return showToast(currentLang === 'en' ? `All slots on ${targetSide.toUpperCase()} are full!` : `Все слоты стороны ${targetSide.toUpperCase()} заняты!`, 'warn');
-
-            const candidate = catalogItems
-                .filter(u => window.getUnitTradeValue(u) > 0)
-                .sort((a, b) => Math.abs(window.getUnitTradeValue(a) - diff) - Math.abs(window.getUnitTradeValue(b) - diff))[0];
-
-            if (candidate) {
-                tradeState[targetSide][emptyIdx] = { unit: candidate, qty: 1 };
-                renderTradeSlots();
-                showToast(currentLang === 'en' ? `Added ${candidate.name} to balance trade!` : `Добавлен ${candidate.name} для балансировки до FAIR!`, 'success');
-            }
-        };
-
-        window.handleSelectAsSource = function(unitId) {
-            const unit = catalogItems.find(u => Number(u.id) === Number(unitId));
-            if (!unit) return showToast(currentLang === 'en' ? 'Unit not found' : 'Юнит не найден', 'error');
-
-            upgraderState.sourceType = 'unit';
-            upgraderState.sourceUnit = unit;
-            upgraderState.sourceVal = window.getUnitGameValue(unit);
-
-            const img = document.getElementById('upgSourceImg');
-            if (img) img.src = unit.img;
-            const name = document.getElementById('upgSourceName');
-            if (name) name.innerText = unit.name;
-            const val = document.getElementById('upgSourceValue');
-            if (val) val.innerText = `${upgraderState.sourceVal.toLocaleString()} 🪙 (Game Val)`;
-
-            const customBet = document.getElementById('upgCustomBetInput');
-            if (customBet) customBet.value = '';
-
-            calculateUpgraderChance();
-            playAudioTick(1.2);
-            showToast(currentLang === 'en' ? `⚡ Bet unit: ${unit.name}` : `⚡ Выбран для ставки: ${unit.name}`, 'info');
-
-            const card = document.getElementById('upgSourceSlotCard');
-            if (card) {
-                card.classList.add('ring-2', 'ring-cyan-400');
-                setTimeout(() => card.classList.remove('ring-2', 'ring-cyan-400'), 600);
-            }
-        };
-
-        window.handleSelectAsTarget = function(unitId) {
-            const unit = catalogItems.find(u => Number(u.id) === Number(unitId));
-            if (!unit) return showToast(currentLang === 'en' ? 'Unit not found' : 'Юнит не найден', 'error');
-
-            upgraderState.targetUnit = unit;
-
-            const img = document.getElementById('upgTargetImg');
-            if (img) img.src = unit.img;
-            const name = document.getElementById('upgTargetName');
-            if (name) name.innerText = unit.name;
-            const val = document.getElementById('upgTargetValue');
-            const targetVal = window.getUnitGameValue(unit);
-            if (val) val.innerText = `${targetVal.toLocaleString()} 🪙 (Game Val)`;
-
-            const rEl = document.getElementById('upgTargetRarity');
-            if (rEl) {
-                rEl.innerText = unit.rarity;
-                rEl.className = `text-[10px] font-black uppercase text-rarity-${unit.rarity}`;
-            }
-
-            calculateUpgraderChance();
-            playAudioTick(1.4);
-            showToast(currentLang === 'en' ? `🎯 Target: ${unit.name}` : `🎯 Цель выбрана: ${unit.name}`, 'success');
-
-            const card = document.getElementById('upgTargetSlotCard');
-            if (card) {
-                card.classList.add('ring-2', 'ring-amber-400');
-                setTimeout(() => card.classList.remove('ring-2', 'ring-amber-400'), 600);
-            }
-        };
-
-        window.handleQuickSelectTarget = function(unitId) {
-            handleSelectAsTarget(unitId);
-            switchMainTab('upgrader');
-        };
-
-        window.openUpgraderSlotPicker = function(type) {
-            activePickerMode = type === 'source' ? 'upg_source' : 'upg_target';
-            document.getElementById('pickerModalTitle').innerText = type === 'source' 
-                ? (currentLang === 'en' ? 'Select unit to bet (Inventory)' : 'Выберите персонажа для прокачки (Из Инвентаря)')
-                : (currentLang === 'en' ? 'Select target unit (Catalog)' : 'Выберите целевого персонажа (Из Каталога)');
-            renderUnitPickerList();
-            document.getElementById('unitPickerModal')?.classList.remove('hidden');
-        };
-
-        window.clearUpgraderSource = function() {
-            upgraderState.sourceType = 'unit';
-            upgraderState.sourceUnit = null;
-            upgraderState.sourceVal = 0;
-
-            const img = document.getElementById('upgSourceImg');
-            if (img) img.src = 'https://placehold.co/120x120/0f172a/38bdf8?text=%2B+Выбрать';
-            const name = document.getElementById('upgSourceName');
-            if (name) name.innerText = currentLang === 'en' ? 'Click to select unit' : 'Нажмите, чтобы выбрать юнит';
-            const val = document.getElementById('upgSourceValue');
-            if (val) val.innerText = '0 Val';
-            const customBet = document.getElementById('upgCustomBetInput');
-            if (customBet) customBet.value = '';
-
-            calculateUpgraderChance();
-        };
-
-        window.handleCustomValBetChange = function(rawVal) {
-            const val = parseInt(rawVal, 10) || 0;
-            upgraderState.sourceType = 'value';
-            upgraderState.sourceUnit = null;
-            upgraderState.sourceVal = val;
-
-            const img = document.getElementById('upgSourceImg');
-            if (img) img.src = 'https://placehold.co/120x120/0f172a/10b981?text=Val+Bet';
-            const name = document.getElementById('upgSourceName');
-            if (name) name.innerText = `${currentLang === 'en' ? 'Bet:' : 'Ставка:'} ${val.toLocaleString()} Val`;
-            const valEl = document.getElementById('upgSourceValue');
-            if (valEl) valEl.innerText = `${val.toLocaleString()} Val`;
-
-            calculateUpgraderChance();
-        };
-
-        function calculateUpgraderChance() {
-            const srcVal = upgraderState.sourceVal || 0;
-            const targetVal = upgraderState.targetUnit ? window.getUnitGameValue(upgraderState.targetUnit) : 0;
-
-            let chance = 0;
-            if (srcVal > 0 && targetVal > 0) {
-                chance = (srcVal / targetVal) * 100;
-            }
-
-            if (chance > 95) chance = 95.0;
-            if (chance < 0.5 && srcVal > 0 && targetVal > 0) chance = 0.5;
-
-            upgraderState.winChance = chance;
-            const el = document.getElementById('upgChancePercentDisplay');
-            if (el) el.innerText = `${chance.toFixed(2)}%`;
-
-            drawUpgraderWheel(upgraderState.wheelAngle);
-        }
-
-        function drawUpgraderWheel(pointerAngle = 0) {
-            const canvas = document.getElementById('upgraderWheelCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const radius = 100;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Темный диск основы
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius + 14, 0, Math.PI * 2);
-            ctx.fillStyle = '#060a12';
-            ctx.fill();
-
-            // Круговой рельс (черный сектор)
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-            ctx.strokeStyle = '#152033';
-            ctx.lineWidth = 14;
-            ctx.stroke();
-
-            // Зеленый победный сектор: строго с 12:00 (-PI/2) по часовой стрелке
-            const chancePct = upgraderState.winChance || 0;
-            const winAngleSpan = (chancePct / 100) * (Math.PI * 2);
-
-            if (winAngleSpan > 0) {
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, radius, -Math.PI / 2, -Math.PI / 2 + winAngleSpan, false);
-                
-                const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-                grad.addColorStop(0, '#f59e0b');
-                grad.addColorStop(0.5, '#10b981');
-                grad.addColorStop(1, '#06b6d4');
-                ctx.strokeStyle = grad;
-                ctx.lineWidth = 16;
-                ctx.shadowColor = 'rgba(16, 185, 129, 0.75)';
-                ctx.shadowBlur = 10;
-                ctx.stroke();
-                ctx.shadowBlur = 0;
-            }
-
-            // ТОЧНАЯ СИНХРОНИЗАЦИЯ СТРЕЛКИ (pointerAngle = 0 указывает строго в 12:00 на начало зеленого сектора)
-            const arrowAngle = -Math.PI / 2 + pointerAngle;
-            ctx.save();
-            ctx.translate(centerX, centerY);
-            ctx.rotate(arrowAngle);
-
-            // Стрелка снаружи, направленная острием внутрь на обод
-            ctx.beginPath();
-            ctx.moveTo(radius - 2, 0);
-            ctx.lineTo(radius + 15, -7);
-            ctx.lineTo(radius + 15, 7);
-            ctx.closePath();
-            
-            ctx.fillStyle = '#fbbf24';
-            ctx.shadowColor = 'rgba(251, 191, 36, 0.85)';
-            ctx.shadowBlur = 8;
-            ctx.fill();
-
-            ctx.strokeStyle = '#d97706';
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-            ctx.restore();
-        }
-
-        window.executeUpgradeRoll = function() {
-            if (upgraderState.isSpinning) return;
-
-            const srcVal = upgraderState.sourceVal;
-            if (srcVal <= 0) return showToast(currentLang === 'en' ? 'Select unit or place Val bet!' : 'Выберите юнит или введите ставку Val!', 'warn');
-            if (!upgraderState.targetUnit) return showToast(currentLang === 'en' ? 'Select target unit!' : 'Выберите целевого персонажа!', 'warn');
-
-            if (upgraderState.sourceType === 'value') {
-                if (userValBalance < srcVal) return showToast(currentLang === 'en' ? 'Not enough Val balance!' : 'Недостаточно игрового Val на балансе!', 'error');
-            }
-
-            upgraderState.isSpinning = true;
-            const btn = document.getElementById('executeUpgradeBtn');
-            if (btn) {
-                btn.disabled = true;
-                btn.classList.add('opacity-50', 'cursor-not-allowed');
-            }
-
-            // Математический расчет победы
-            const isWin = (Math.random() * 100) <= upgraderState.winChance;
-            const winSpan = (upgraderState.winChance / 100) * (Math.PI * 2);
-            
-            // Если выигрыш — стрелка 100% останавливается внутри зеленой дуги
-            // Если проигрыш — стрелка 100% останавливается на темной дорожке
-            let landingAngle = 0;
-            if (isWin) {
-                landingAngle = Math.random() * (winSpan * 0.88) + (winSpan * 0.06);
-            } else {
-                landingAngle = winSpan + Math.random() * ((Math.PI * 2 - winSpan) * 0.88) + 0.05;
-            }
-
-            const totalTargetAngle = (4 * Math.PI * 2) + landingAngle;
-            const startTime = performance.now();
-            const duration = 4200;
-            let lastTick = 0;
-
-            function animate(now) {
-                const elapsed = now - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                const easeOut = 1 - Math.pow(1 - progress, 3.5);
-                const currentAngle = easeOut * totalTargetAngle;
-
-                upgraderState.wheelAngle = currentAngle % (Math.PI * 2);
-                drawUpgraderWheel(upgraderState.wheelAngle);
-
-                if (currentAngle - lastTick >= 0.35) {
-                    lastTick = currentAngle;
-                    playAudioTick(1 + (1 - progress) * 0.8);
-                }
-
-                if (progress < 1) {
-                    requestAnimationFrame(animate);
-                } else {
-                    upgraderState.isSpinning = false;
-                    if (btn) {
-                        btn.disabled = false;
-                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    }
-                    finalizeUpgrade(isWin);
-                }
-            }
-
-            requestAnimationFrame(animate);
-        };
-
-        function finalizeUpgrade(isWin) {
-            const target = upgraderState.targetUnit;
-            if (upgraderState.sourceType === 'unit') {
-                const item = userInventory.find(i => i.unitId === upgraderState.sourceUnit.id);
-                if (item) {
-                    item.qty -= 1;
-                    if (item.qty <= 0) userInventory = userInventory.filter(i => i.unitId !== upgraderState.sourceUnit.id);
-                }
-            } else {
-                userValBalance = Math.max(0, userValBalance - upgraderState.sourceVal);
-            }
-
-            if (isWin) {
-                playAudioWin();
-                const existing = userInventory.find(i => i.unitId === target.id);
-                if (existing) existing.qty += 1;
-                else userInventory.push({ unitId: target.id, qty: 1 });
-
-                addLiveTickerEvent({
-                    user: currentUserNick,
-                    type: "upgrader",
-                    unitName: target.name,
-                    rarity: target.rarity,
-                    detail: `${upgraderState.winChance.toFixed(0)}%`
-                });
-
-                showToast(currentLang === 'en' ? `🎉 WIN! Unlocked: ${target.name}!` : `🎉 ПОБЕДА! Получен юнит: ${target.name}!`, 'success');
-            } else {
-                playAudioLose();
-                showToast(currentLang === 'en' ? `💥 Upgrade failed. Bet lost!` : `💥 Неудача. Ставка сгорела!`, 'error');
-            }
-
-            try { localStorage.setItem('ctd_inventory_data', JSON.stringify(userInventory)); } catch(e) {}
-            updateUserBalanceDisplay();
-            renderInventory();
-            renderUpgraderBottomList();
-            if (upgraderState.sourceType === 'unit') clearUpgraderSource();
-        }
-
-        window.setUpgraderMultiplier = function(mult) {
-            if (upgraderState.sourceVal <= 0) return showToast(currentLang === 'en' ? 'Select bet first!' : 'Сначала сделайте ставку слева!', 'warn');
-            const targetVal = upgraderState.sourceVal * mult;
-            const candidate = catalogItems.slice().sort((a,b) => Math.abs(window.getUnitGameValue(a) - targetVal) - Math.abs(window.getUnitGameValue(b) - targetVal))[0];
-            if (candidate) handleSelectAsTarget(candidate.id);
-        };
-
-        window.setUpgraderChanceTarget = function(pct) {
-            if (upgraderState.sourceVal <= 0) return showToast(currentLang === 'en' ? 'Select bet first!' : 'Сначала сделайте ставку слева!', 'warn');
-            const targetVal = upgraderState.sourceVal / (pct / 100);
-            const candidate = catalogItems.slice().sort((a,b) => Math.abs(window.getUnitGameValue(a) - targetVal) - Math.abs(window.getUnitGameValue(b) - targetVal))[0];
-            if (candidate) handleSelectAsTarget(candidate.id);
-        };
-
-        window.setUpgraderRandomTarget = function() {
-            const valid = catalogItems.filter(u => window.getUnitGameValue(u) > 0);
-            if (valid.length) {
-                const randUnit = valid[Math.floor(Math.random() * valid.length)];
-                handleSelectAsTarget(randUnit.id);
-            }
-        };
-
-        window.switchUpgraderBottomTab = function(tab) {
-            upgraderState.bottomTab = tab;
-            const invBtn = document.getElementById('upgTabInvBtn');
-            const shopBtn = document.getElementById('upgTabShopBtn');
-            if (invBtn) {
-                invBtn.className = (tab === 'inventory')
-                    ? "px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-emerald-600 text-white shadow-sm"
-                    : "px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center gap-1.5";
-            }
-            if (shopBtn) {
-                shopBtn.className = (tab === 'shop')
-                    ? "px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-amber-600 text-white shadow-sm"
-                    : "px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center gap-1.5";
-            }
-            renderUpgraderBottomList();
-        };
-
-        window.renderUpgraderBottomList = function() {
-            const grid = document.getElementById('upgraderBottomItemsGrid');
-            if (!grid) return;
-            const query = (document.getElementById('upgBottomSearchInput')?.value || '').trim().toLowerCase();
-
-            if (upgraderState.bottomTab === 'inventory') {
-                const available = userInventory
-                    .map(e => ({ unit: catalogItems.find(u => u.id === e.unitId), qty: e.qty }))
-                    .filter(e => e.unit && (!query || e.unit.name.toLowerCase().includes(query)));
-
-                if (!available.length) {
-                    grid.innerHTML = `<div class="col-span-full py-6 text-center text-xs text-slate-500">${currentLang === 'en' ? 'Inventory is empty. Unbox units from crates or buy below!' : 'В инвентаре пусто. Выбейте персонажей в кейсах или купите в магазине ниже!'}</div>`;
-                    return;
-                }
-
-                grid.innerHTML = available.map(item => `
-                    <div class="p-2.5 rounded-xl bg-dark-950 border border-dark-border hover:border-cyan-500/60 transition flex flex-col justify-between unit-card-hover shadow-sm">
-                        <div class="flex items-center justify-between text-[9px] mb-1">
-                            <span class="font-black uppercase text-rarity-${item.unit.rarity}">${item.unit.rarity}</span>
-                            <span class="font-mono text-slate-400 font-bold">x${item.qty}</span>
-                        </div>
-                        <div class="w-full h-14 flex items-center justify-center p-1">
-                            <img src="${item.unit.img}" class="max-h-full max-w-full object-contain" alt="">
-                        </div>
-                        <div class="my-1 text-center">
-                            <h5 class="text-xs font-bold text-white truncate">${item.unit.name}</h5>
-                            <span class="text-[10px] font-mono font-bold text-emerald-400">${window.getUnitGameValue(item.unit)} Val</span>
-                        </div>
-                        <button type="button" onclick="event.stopPropagation(); handleSelectAsSource(${item.unit.id})" class="w-full py-1.5 bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-300 font-black text-[11px] rounded-lg transition border border-cyan-500/40 active:scale-95 shadow-sm">
-                            ⚡ ${currentLang === 'en' ? 'Bet Unit' : 'Поставить'}
-                        </button>
-                    </div>
-                `).join('');
-            } else {
-                const catalogUnits = catalogItems.filter(u => !query || u.name.toLowerCase().includes(query));
-                grid.innerHTML = catalogUnits.map(unit => {
-                    const gameCost = window.getUnitGameValue(unit);
-                    return `
-                        <div class="p-2.5 rounded-xl bg-dark-950 border border-dark-border hover:border-amber-500/60 transition flex flex-col justify-between unit-card-hover shadow-sm">
-                            <div class="flex items-center justify-between text-[9px] mb-1">
-                                <span class="font-black uppercase text-rarity-${unit.rarity}">${unit.rarity}</span>
-                                <span class="font-mono text-emerald-400 font-bold">${gameCost} Val</span>
-                            </div>
-                            <div class="w-full h-14 flex items-center justify-center p-1">
-                                <img src="${unit.img}" class="max-h-full max-w-full object-contain" alt="">
-                            </div>
-                            <div class="my-1 text-center">
-                                <h5 class="text-xs font-bold text-white truncate">${unit.name}</h5>
-                            </div>
-                            <div class="flex flex-col gap-1.5">
-                                <button type="button" onclick="event.stopPropagation(); handleSelectAsTarget(${unit.id})" class="w-full py-1.5 bg-amber-600/20 hover:bg-amber-600/40 text-amber-300 font-black text-[11px] rounded-lg transition border border-amber-500/40 active:scale-95 shadow-sm">
-                                    🎯 ${currentLang === 'en' ? 'Set as Target' : 'Выбрать целью'}
-                                </button>
-                                <button type="button" onclick="event.stopPropagation(); buyUnitFromShop(${unit.id})" class="w-full py-1 bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 font-bold text-[10px] rounded-lg transition border border-emerald-500/30 active:scale-95">
-                                    🛒 ${currentLang === 'en' ? 'Buy' : 'Купить'} (${gameCost} Val)
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            }
-        };
-
-        window.buyUnitFromShop = function(unitId) {
-            const unit = catalogItems.find(u => Number(u.id) === Number(unitId));
-            if (!unit) return;
-            const cost = window.getUnitGameValue(unit);
-            if (userValBalance < cost) return showToast(currentLang === 'en' ? `Not enough Val! Need ${cost} Val` : `Недостаточно игровых монет Val! Нужно ${cost} Val`, 'warn');
-
-            userValBalance -= cost;
-            updateUserBalanceDisplay();
-
-            const existing = userInventory.find(i => i.unitId === unit.id);
-            if (existing) existing.qty += 1;
-            else userInventory.push({ unitId: unit.id, qty: 1 });
-
-            try { localStorage.setItem('ctd_inventory_data', JSON.stringify(userInventory)); } catch(e) {}
-            playAudioCoins();
-            renderInventory();
-            renderUpgraderBottomList();
-            showToast(currentLang === 'en' ? `Purchased: ${unit.name} (-${cost} Val)` : `Куплен: ${unit.name} (-${cost} Val)`, 'success');
-        };
-
-        window.renderCratesView = function() {
-            const grid = document.getElementById('cratesListGrid');
-            const countBadge = document.getElementById('cratesCountBadge');
-            const editBtn = document.getElementById('activeCrateEditBtn');
-            if (countBadge) countBadge.innerText = `${cratesList.length} ${currentLang === 'en' ? 'pcs.' : 'шт.'}`;
-            if (editBtn) editBtn.classList.toggle('hidden', !isMasterAdmin);
-            if (!grid) return;
-
-            if (!cratesList.length) {
-                grid.innerHTML = `<div class="col-span-full py-6 text-center text-xs text-slate-500">${currentLang === 'en' ? 'No crates created yet.' : 'Кейсы пока не созданы.'}</div>`;
-                return;
-            }
-
-            if (!activeCrateId || !cratesList.some(c => c.id === activeCrateId)) {
-                activeCrateId = cratesList[0].id;
-            }
-
-            grid.innerHTML = cratesList.map(crate => {
-                const isSelected = crate.id === activeCrateId;
-                const isFree = crate.mode === 'free';
-                return `
-                    <div onclick="selectActiveCrate('${crate.id}')" class="p-3.5 rounded-2xl border ${isSelected ? 'border-amber-500 bg-amber-500/10' : 'border-dark-border bg-dark-950'} cursor-pointer transition unit-card-hover flex items-center justify-between shadow-sm">
-                        <div class="flex items-center gap-3">
-                            <img src="${crate.img}" class="w-12 h-12 rounded-xl object-contain bg-dark-900 border border-dark-border p-1" alt="">
-                            <div>
-                                <h4 class="text-xs sm:text-sm font-bold text-white truncate">${crate.name}</h4>
-                                <span class="text-[11px] font-mono ${isFree ? 'text-emerald-400' : 'text-amber-400'} font-bold">${isFree ? (currentLang === 'en' ? '🆓 Free' : '🆓 Бесплатно') : crate.costValue + ' Val'}</span>
-                            </div>
-                        </div>
-                        <span class="text-xs font-bold ${isSelected ? 'text-amber-400' : 'text-slate-500'}">➔</span>
-                    </div>
-                `;
-            }).join('');
-
-            const current = cratesList.find(c => c.id === activeCrateId) || cratesList[0];
-            if (current) {
-                document.getElementById('activeCrateName').innerText = current.name;
-                document.getElementById('activeCrateImg').src = current.img;
-                document.getElementById('activeCrateCost').innerText = current.mode === 'free' ? (currentLang === 'en' ? '🆓 Free' : '🆓 Бесплатно') : `${current.costValue} Val`;
-
-                const dropsList = document.getElementById('activeCrateDropsList');
-                if (dropsList) {
-                    dropsList.innerHTML = (current.items || []).map(entry => {
-                        const unit = catalogItems.find(u => u.id === entry.unitId);
-                        if (!unit) return '';
-                        return `
-                            <div class="px-2.5 py-1 rounded-xl bg-dark-950 border border-dark-border flex items-center gap-2 text-xs">
-                                <span class="font-bold text-white">${unit.name}:</span>
-                                <span class="font-mono font-black text-amber-400">${entry.chance}%</span>
-                            </div>
-                        `;
-                    }).join('');
-                }
-                populateRoulette(current);
-            }
-        };
-
-        window.selectActiveCrate = function(id) {
-            activeCrateId = id;
-            renderCratesView();
-        };
-
-        function populateRoulette(crate) {
-            const track = document.getElementById('rouletteTrack');
-            if (!track) return;
-            track.style.transform = 'translateX(0px)';
-            const pool = (crate.items || []).map(i => catalogItems.find(u => u.id === i.unitId)).filter(Boolean);
-            const valid = pool.length ? pool : catalogItems;
-
-            track.innerHTML = Array.from({ length: 35 }).map(() => {
-                const u = valid[Math.floor(Math.random() * valid.length)];
-                return `
-                    <div class="w-24 h-28 rounded-xl bg-dark-950 border border-rarity-${u.rarity} p-1.5 flex flex-col items-center justify-between shrink-0 shadow-md">
-                        <img src="${u.img}" class="max-h-14 max-w-full object-contain" alt="">
-                        <span class="text-[9px] font-bold text-white truncate max-w-full">${u.name}</span>
-                        <span class="text-[8px] font-black uppercase text-rarity-${u.rarity}">${u.rarity}</span>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        window.spinActiveCrate = function() {
-            if (isRouletteSpinning) return;
-            const crate = cratesList.find(c => c.id === activeCrateId);
-            if (!crate) return;
-
-            const isFree = crate.mode === 'free';
-            if (!isFree) {
-                if (userValBalance < crate.costValue) return showToast(currentLang === 'en' ? 'Not enough Val balance!' : 'Недостаточно игровых монет Val!', 'error');
-                userValBalance -= crate.costValue;
-                updateUserBalanceDisplay();
-            }
-
-            const drops = (crate.items || []).map(e => ({ unit: catalogItems.find(u => u.id === e.unitId), chance: e.chance })).filter(e => e.unit);
-            if (!drops.length) return showToast(currentLang === 'en' ? 'No units in crate!' : 'В кейсе нет доступных персонажей!', 'warn');
-
-            isRouletteSpinning = true;
-            document.getElementById('crateWonBanner')?.classList.add('hidden');
-
-            const total = drops.reduce((acc, c) => acc + c.chance, 0);
-            let rnd = Math.random() * total;
-            let winner = drops[0].unit;
-            for (const d of drops) {
-                if (rnd <= d.chance) {
-                    winner = d.unit;
-                    break;
-                }
-                rnd -= d.chance;
-            }
-
-            const track = document.getElementById('rouletteTrack');
-            const winningIndex = 26;
-            const cards = Array.from({ length: 35 }).map((_, i) => {
-                const u = (i === winningIndex) ? winner : drops[Math.floor(Math.random() * drops.length)].unit;
-                return `
-                    <div class="w-24 h-28 rounded-xl bg-dark-950 border border-rarity-${u.rarity} p-1.5 flex flex-col items-center justify-between shrink-0 shadow-md">
-                        <img src="${u.img}" class="max-h-14 max-w-full object-contain" alt="">
-                        <span class="text-[9px] font-bold text-white truncate max-w-full">${u.name}</span>
-                        <span class="text-[8px] font-black uppercase text-rarity-${u.rarity}">${u.rarity}</span>
-                    </div>
-                `;
-            });
-            track.innerHTML = cards.join('');
-
-            const cardWidth = 104;
-            const randomInnerCardShift = Math.floor((Math.random() - 0.5) * (cardWidth * 0.72));
-            const targetOffset = (winningIndex * cardWidth) - (track.parentElement.offsetWidth / 2) + (cardWidth / 2) + randomInnerCardShift;
-            
-            const start = performance.now();
-            const duration = 4400;
-            let lastCard = 0;
-
-            function step(now) {
-                const elapsed = now - start;
-                const progress = Math.min(elapsed / duration, 1);
-                const ease = 1 - Math.pow(1 - progress, 4);
-                const currentTranslate = ease * targetOffset;
-
-                track.style.transform = `translateX(-${currentTranslate}px)`;
-                const cardIdx = Math.floor(currentTranslate / cardWidth);
-                if (cardIdx !== lastCard) {
-                    lastCard = cardIdx;
-                    playAudioTick(1 + (1 - progress) * 0.8);
-                }
-
-                if (progress < 1) {
-                    requestAnimationFrame(step);
-                } else {
-                    isRouletteSpinning = false;
-                    playAudioWin();
-
-                    if (!isFree) {
-                        const existing = userInventory.find(i => i.unitId === winner.id);
-                        if (existing) existing.qty += 1;
-                        else userInventory.push({ unitId: winner.id, qty: 1 });
-                        try { localStorage.setItem('ctd_inventory_data', JSON.stringify(userInventory)); } catch(e) {}
-                        renderInventory();
-                        renderUpgraderBottomList();
-                    }
-
-                    addLiveTickerEvent({
-                        user: currentUserNick,
-                        type: "crate",
-                        unitName: winner.name,
-                        rarity: winner.rarity,
-                        detail: crate.name
-                    });
-
-                    document.getElementById('crateWonImg').src = winner.img;
-                    document.getElementById('crateWonName').innerText = winner.name;
-                    document.getElementById('crateWonRarity').innerText = winner.rarity;
-                    document.getElementById('crateWonBanner')?.classList.remove('hidden');
-                    showToast(currentLang === 'en' ? `🎉 Unboxed: ${winner.name}!` : `🎉 Дроп из кейса: ${winner.name}!`, 'success');
-                }
-            }
-
-            requestAnimationFrame(step);
-        };
-
-        window.editActiveCrate = function() {
-            if (activeCrateId) openCrateBuilderModal(activeCrateId);
-        };
-
-        window.renderWikiList = function() {
-            const grid = document.getElementById('wikiUnitsGrid');
-            if (!grid) return;
-            const searchVal = (document.getElementById('wikiSearchInput')?.value || '').trim().toLowerCase();
-            const filtered = catalogItems.filter(u => !searchVal || u.name.toLowerCase().includes(searchVal));
-
-            grid.innerHTML = filtered.map(u => `
-                <div onclick="selectWikiUnit(${u.id})" class="p-2 rounded-xl bg-dark-950 border ${u.id === selectedWikiUnitId ? 'border-emerald-500 shadow-md shadow-emerald-500/20' : 'border-dark-border'} hover:border-emerald-500/60 cursor-pointer flex flex-col items-center justify-between text-center unit-card-hover">
-                    <img src="${u.img}" class="h-12 object-contain" alt="">
-                    <span class="text-[10px] font-bold text-white truncate max-w-full mt-1">${u.name}</span>
-                </div>
-            `).join('');
-            renderWikiDetails();
-        };
-
-        window.selectWikiUnit = function(id) {
-            selectedWikiUnitId = id;
-            renderWikiList();
-        };
-
-        window.openWikiUnitDetails = function(id) {
-            selectedWikiUnitId = id;
-            switchMainTab('wiki');
-        };
-
-        function renderWikiDetails() {
-            const box = document.getElementById('wikiUnitDetailsBox');
-            if (!box) return;
-            const unit = catalogItems.find(u => u.id === selectedWikiUnitId) || catalogItems[0];
-            if (!unit) return;
-
-            const levels = (wikiStats[unit.id] && Array.isArray(wikiStats[unit.id].levels)) ? wikiStats[unit.id].levels : [];
-            const first = levels[0] || { damage: 0, cooldown: 1.0, range: 0, cost: 0 };
-            const last = levels[levels.length - 1] || first;
-            const dps = last.cooldown > 0 ? (last.damage / last.cooldown).toFixed(2) : "0.00";
-
-            box.innerHTML = `
-                <div class="flex items-center justify-between pb-3 border-b border-dark-border">
-                    <div class="flex items-center gap-3">
-                        <img src="${unit.img}" class="w-14 h-14 rounded-xl object-contain bg-dark-900 border border-rarity-${unit.rarity} p-1" alt="">
-                        <div>
-                            <span class="text-[9px] font-black uppercase text-rarity-${unit.rarity}">${unit.rarity}</span>
-                            <h3 class="text-base font-black text-white">${unit.name}</h3>
-                        </div>
-                    </div>
-                    ${isMasterAdmin ? `<button onclick="openAddWikiLevelModal(${unit.id})" class="px-3 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold">+ ${currentLang === 'en' ? 'Add Level' : 'Добавить уровень'}</button>` : ''}
-                </div>
-
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                    <div class="bg-dark-900 p-2.5 rounded-xl border border-dark-border">
-                        <span class="text-[10px] text-slate-400 uppercase font-bold block">${currentLang === 'en' ? 'Max Damage' : 'Макс. Урон'}</span>
-                        <span class="text-base font-mono font-black text-white">${last.damage}</span>
-                    </div>
-                    <div class="bg-dark-900 p-2.5 rounded-xl border border-dark-border">
-                        <span class="text-[10px] text-slate-400 uppercase font-bold block">${currentLang === 'en' ? 'Cooldown' : 'Кулдаун'}</span>
-                        <span class="text-base font-mono font-black text-white">${last.cooldown} s</span>
-                    </div>
-                    <div class="bg-dark-900 p-2.5 rounded-xl border border-dark-border">
-                        <span class="text-[10px] text-slate-400 uppercase font-bold block">${currentLang === 'en' ? 'Range' : 'Дальность'}</span>
-                        <span class="text-base font-mono font-black text-white">${last.range}</span>
-                    </div>
-                    <div class="bg-dark-900 p-2.5 rounded-xl border border-dark-border">
-                        <span class="text-[10px] text-slate-400 uppercase font-bold block">DPS</span>
-                        <span class="text-base font-mono font-black text-emerald-400">${dps}</span>
-                    </div>
-                </div>
-
-                <div class="space-y-2">
-                    <h4 class="text-xs font-bold text-slate-300">${currentLang === 'en' ? 'Upgrade Levels Table:' : 'Таблица уровней прокачки:'}</h4>
-                    <div class="overflow-x-auto border border-dark-border rounded-xl bg-dark-900">
-                        <table class="w-full text-center text-xs font-mono">
-                            <thead class="bg-dark-950 text-slate-400 text-[10px] uppercase border-b border-dark-border">
-                                <tr>
-                                    <th class="p-2">${currentLang === 'en' ? 'Lvl' : 'Ур.'}</th>
-                                    <th class="p-2">${currentLang === 'en' ? 'Cost' : 'Цена'}</th>
-                                    <th class="p-2">${currentLang === 'en' ? 'Dmg' : 'Урон'}</th>
-                                    <th class="p-2">CD</th>
-                                    <th class="p-2">${currentLang === 'en' ? 'Range' : 'Дальность'}</th>
-                                    <th class="p-2">DPS</th>
-                                    ${isMasterAdmin ? `<th class="p-2 text-right">${currentLang === 'en' ? 'Action' : 'Действие'}</th>` : ''}
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-dark-border/60">
-                                ${levels.length ? levels.map((lvl, idx) => `
-                                    <tr>
-                                        <td class="p-2 font-bold text-white">${lvl.level || (idx+1)}</td>
-                                        <td class="p-2">${lvl.cost}</td>
-                                        <td class="p-2 font-bold text-emerald-400">${lvl.damage}</td>
-                                        <td class="p-2">${lvl.cooldown}</td>
-                                        <td class="p-2">${lvl.range}</td>
-                                        <td class="p-2 font-black text-cyan-400">${(lvl.damage / (lvl.cooldown || 1)).toFixed(1)}</td>
-                                        ${isMasterAdmin ? `
-                                            <td class="p-2 text-right">
-                                                <button onclick="deleteWikiLevel(${unit.id}, ${idx})" class="text-rose-400 hover:underline">✕</button>
-                                            </td>
-                                        ` : ''}
-                                    </tr>
-                                `).join('') : `<tr><td colspan="7" class="p-3 text-slate-500">${currentLang === 'en' ? 'No levels configured for this unit yet.' : 'Уровни еще не настроены для этого юнита'}</td></tr>`}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-        }
-
-        window.openAddWikiLevelModal = function(unitId) {
-            const levels = (wikiStats[unitId] && wikiStats[unitId].levels) || [];
-            document.getElementById('wikiLevelUnitId').value = unitId;
-            document.getElementById('wikiLevelIndex').value = '-1';
-            document.getElementById('wikiLvlNumInput').value = levels.length + 1;
-            document.getElementById('wikiLevelEditorModal')?.classList.remove('hidden');
-        };
-
-        window.closeWikiLevelModal = function() {
-            document.getElementById('wikiLevelEditorModal')?.classList.add('hidden');
-        };
-
-        window.updateWikiModalDpsPreview = function() {
-            const dmg = parseFloat(document.getElementById('wikiLvlDmgInput')?.value) || 0;
-            const cd = parseFloat(document.getElementById('wikiLvlCdInput')?.value) || 1;
-            document.getElementById('wikiLvlDpsPreview').innerText = `${(dmg / (cd || 1)).toFixed(2)} DPS`;
-        };
-
-        window.saveWikiLevelFromModal = function() {
-            const unitId = parseInt(document.getElementById('wikiLevelUnitId').value, 10);
-            const level = parseInt(document.getElementById('wikiLvlNumInput').value, 10) || 1;
-            const cost = parseInt(document.getElementById('wikiLvlCostInput').value, 10) || 100;
-            const damage = parseInt(document.getElementById('wikiLvlDmgInput').value, 10) || 10;
-            const cooldown = parseFloat(document.getElementById('wikiLvlCdInput').value) || 1.5;
-            const range = parseFloat(document.getElementById('wikiLvlRangeInput').value) || 10.0;
-
-            if (!wikiStats[unitId]) wikiStats[unitId] = { levels: [] };
-            wikiStats[unitId].levels.push({ level, cost, damage, cooldown, range });
-            try { localStorage.setItem('ctd_wiki_data', JSON.stringify(wikiStats)); } catch(e) {}
-            closeWikiLevelModal();
-            renderWikiDetails();
-            forceSyncToCloud(false);
-            showToast(currentLang === 'en' ? 'Level added!' : 'Уровень добавлен!', 'success');
-        };
-
-        window.deleteWikiLevel = function(unitId, idx) {
-            if (wikiStats[unitId]?.levels) {
-                wikiStats[unitId].levels.splice(idx, 1);
-                try { localStorage.setItem('ctd_wiki_data', JSON.stringify(wikiStats)); } catch(e) {}
-                renderWikiDetails();
-                forceSyncToCloud(false);
-            }
-        };
-
-        window.renderTierListBoard = function() {
-            const tiers = ['S', 'A', 'B', 'C', 'D'];
-            const assignedIds = new Set(Object.values(tierListState).flat());
-
-            tiers.forEach(tier => {
-                const dropzone = document.querySelector(`.tier-row[data-tier="${tier}"] .tier-dropzone`);
-                const list = tierListState[tier] || [];
-                const countBadge = document.getElementById(`tierCount_${tier}`);
-                if (countBadge) countBadge.innerText = `${list.length} ${currentLang === 'en' ? 'pcs.' : 'шт.'}`;
-
-                if (dropzone) {
-                    dropzone.innerHTML = list.map(unitId => {
-                        const unit = catalogItems.find(u => u.id === unitId);
-                        if (!unit) return '';
-                        return `
-                            <div draggable="true" ondragstart="event.dataTransfer.setData('text/plain', '${unit.id}')" onclick="cycleUnitTier(${unit.id})" 
-                                 class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-dark-900 border border-rarity-${unit.rarity} p-1 flex items-center justify-center group shrink-0 cursor-pointer shadow-md unit-card-hover select-none" 
-                                 title="${unit.name}">
-                                <img src="${unit.img}" alt="${unit.name}" class="max-h-full max-w-full object-contain pointer-events-none" onerror="this.src='https://placehold.co/80x80/0f172a/38bdf8?text=Unit'">
-                                <span class="absolute bottom-0 inset-x-0 bg-dark-950/85 text-[8px] text-center font-bold text-white truncate px-0.5 rounded-b-xl">${unit.name}</span>
-                                <button onclick="event.stopPropagation(); removeUnitFromTier(${unit.id}, '${tier}')" 
-                                        class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-dark-950 text-rose-400 border border-dark-border text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-md hover:bg-rose-950/60" 
-                                        title="Remove">✕</button>
-                            </div>
-                        `;
-                    }).join('');
-                }
-            });
-
-            const poolBox = document.getElementById('tierPoolBox');
-            const poolCount = document.getElementById('tierPoolCount');
-            const poolSearch = (document.getElementById('tierPoolSearchInput')?.value || '').trim().toLowerCase();
-
-            const unassigned = catalogItems.filter(u => !assignedIds.has(u.id) && (!poolSearch || u.name.toLowerCase().includes(poolSearch)));
-
-            if (poolCount) poolCount.innerText = unassigned.length;
-
-            if (poolBox) {
-                if (unassigned.length === 0) {
-                    poolBox.innerHTML = `<span class="text-xs text-slate-500 italic p-2">${currentLang === 'en' ? 'All units are assigned to tiers.' : 'Все доступные персонажи распределены по рангам.'}</span>`;
-                } else {
-                    poolBox.innerHTML = unassigned.map(unit => `
-                        <div draggable="true" ondragstart="event.dataTransfer.setData('text/plain', '${unit.id}')" onclick="assignUnitToTopTier(${unit.id})" 
-                             class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-dark-950 hover:bg-dark-850 border border-dark-border hover:border-blue-500 p-1 flex items-center justify-center cursor-pointer transition shrink-0 group unit-card-hover select-none" 
-                             title="${unit.name}">
-                            <img src="${unit.img}" alt="${unit.name}" class="max-h-full max-w-full object-contain pointer-events-none" onerror="this.src='https://placehold.co/80x80/0f172a/38bdf8?text=Unit'">
-                            <span class="absolute bottom-0 inset-x-0 bg-dark-950/90 text-[8px] text-center font-bold text-slate-300 group-hover:text-blue-400 truncate px-0.5 rounded-b-xl">${unit.name}</span>
-                        </div>
-                    `).join('');
-                }
-            }
-        };
-
-        window.handleTierDragOver = function(event) {
-            event.preventDefault();
-            event.currentTarget.classList.add('bg-dark-900/90', 'border-amber-400');
-        };
-
-        window.handleTierDragLeave = function(event) {
-            event.currentTarget.classList.remove('bg-dark-900/90', 'border-amber-400');
-        };
-
-        window.handleTierDrop = function(event, tier) {
-            event.preventDefault();
-            event.currentTarget.classList.remove('bg-dark-900/90', 'border-amber-400');
-            const idStr = event.dataTransfer.getData('text/plain');
-            const unitId = parseInt(idStr, 10);
 
             if (unitId) {
                 const unit = catalogItems.find(u => u.id === unitId);
@@ -4575,7 +3458,7 @@
                     };
                     catalogItems.push(newUnit);
                     wikiStats[newId] = { levels: [] };
-                    hubExistsState[newId] = 20; // Стартовое число существующих копий
+                    hubExistsState[newId] = 20;
                     try { 
                         localStorage.setItem('ctd_wiki_data', JSON.stringify(wikiStats));
                         localStorage.setItem('ctd_hub_exists', JSON.stringify(hubExistsState));
@@ -4728,7 +3611,6 @@
                                 <span class="font-black text-emerald-400">${gameVal.toLocaleString()} 🪙</span>
                             </div>
 
-                            <!-- Hub Exists (Глобальное количество существующих копий) -->
                             <div class="flex items-center justify-between text-[11px]">
                                 <span class="text-slate-400 text-[10px]">Hub Exists:</span>
                                 <span class="font-mono font-black text-indigo-400">${exists.toLocaleString()} шт. 🌐</span>
@@ -5002,7 +3884,6 @@
             const unit = catalogItems.find(u => Number(u.id) === Number(unitId));
             if (!unit) return showToast(currentLang === 'en' ? 'Unit not found' : 'Юнит не найден', 'error');
 
-            // Проверяем, есть ли юнит реально в инвентаре
             const owned = userInventory.find(i => i.unitId === unit.id && i.qty > 0);
             if (!owned) {
                 return showToast(currentLang === 'en' ? 'You do not own this unit in inventory!' : 'Этого персонажа нет в вашем инвентаре!', 'warn');
@@ -5140,20 +4021,17 @@
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Основа
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius + 14, 0, Math.PI * 2);
             ctx.fillStyle = '#060a12';
             ctx.fill();
 
-            // Черный сектор
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
             ctx.strokeStyle = '#152033';
             ctx.lineWidth = 14;
             ctx.stroke();
 
-            // Зеленый сектор: строго с 12:00 (-Math.PI / 2)
             const chancePct = upgraderState.winChance || 0;
             const winAngleSpan = (chancePct / 100) * (Math.PI * 2);
 
@@ -5173,7 +4051,6 @@
                 ctx.shadowBlur = 0;
             }
 
-            // Синхронизированная стрелка (при pointerAngle=0 указывает строго в 12:00)
             const arrowAngle = -Math.PI / 2 + pointerAngle;
             ctx.save();
             ctx.translate(centerX, centerY);
@@ -5204,7 +4081,6 @@
             if (srcVal <= 0) return showToast(currentLang === 'en' ? 'Select unit or place Val bet!' : 'Выберите юнит или введите ставку Val!', 'warn');
             if (!upgraderState.targetUnit) return showToast(currentLang === 'en' ? 'Select target unit!' : 'Выберите целевого персонажа!', 'warn');
 
-            // ЗАЩИТА ОТ ДЮПА ИЗ ВИДЕО: проверяем, что юнит всё ещё есть в инвентаре!
             if (upgraderState.sourceType === 'unit') {
                 const owned = userInventory.find(i => i.unitId === upgraderState.sourceUnit.id && i.qty > 0);
                 if (!owned) {
@@ -5215,7 +4091,6 @@
                 if (userValBalance < srcVal) return showToast(currentLang === 'en' ? 'Not enough Val balance!' : 'Недостаточно игрового Val на балансе!', 'error');
             }
 
-            // Включаем защиту от закрытия мини-приложения во время спина
             if (window.Telegram?.WebApp) {
                 window.Telegram.WebApp.enableClosingConfirmation();
             }
@@ -5274,14 +4149,12 @@
         function finalizeUpgrade(isWin) {
             const target = upgraderState.targetUnit;
 
-            // Списание ставки
             if (upgraderState.sourceType === 'unit') {
                 const item = userInventory.find(i => i.unitId === upgraderState.sourceUnit.id);
                 if (item) {
                     item.qty -= 1;
                     if (item.qty <= 0) userInventory = userInventory.filter(i => i.unitId !== upgraderState.sourceUnit.id);
                 }
-                // Если юнит сгорел при проигрыше, уменьшаем Hub Exists
                 if (!isWin) {
                     window.modifyHubExists(upgraderState.sourceUnit.id, -1);
                 }
@@ -5295,7 +4168,6 @@
                 if (existing) existing.qty += 1;
                 else userInventory.push({ unitId: target.id, qty: 1 });
 
-                // Увеличиваем счетчик Hub Exists
                 window.modifyHubExists(target.id, 1);
 
                 addLiveTickerEvent({
@@ -5434,7 +4306,6 @@
             if (existing) existing.qty += 1;
             else userInventory.push({ unitId: unit.id, qty: 1 });
 
-            // Увеличиваем глобальный Hub Exists
             window.modifyHubExists(unit.id, 1);
 
             try { localStorage.setItem('ctd_inventory_data', JSON.stringify(userInventory)); } catch(e) {}
@@ -5540,7 +4411,6 @@
             const drops = (crate.items || []).map(e => ({ unit: catalogItems.find(u => u.id === e.unitId), chance: e.chance })).filter(e => e.unit);
             if (!drops.length) return showToast(currentLang === 'en' ? 'No units in crate!' : 'В кейсе нет доступных персонажей!', 'warn');
 
-            // Защита от случайного свайпа в Telegram
             if (window.Telegram?.WebApp) {
                 window.Telegram.WebApp.enableClosingConfirmation();
             }
@@ -5609,7 +4479,6 @@
                         renderUpgraderBottomList();
                     }
 
-                    // Увеличиваем счетчик Hub Exists
                     window.modifyHubExists(winner.id, 1);
 
                     addLiveTickerEvent({
@@ -6505,7 +5374,6 @@
                                 </button>
                             </div>
 
-                            <!-- КОЛИЧЕСТВО БЕЗ КНОПКИ ПЛЮС (ИСПРАВЛЕН ЧИТ НА БЕСПЛАТНУЮ НАКРУТКУ ЮНИТОВ) -->
                             <div class="flex items-center bg-dark-900 border border-dark-border rounded-lg px-2.5 py-1">
                                 <span class="font-mono font-black text-xs text-white">x${item.qty}</span>
                             </div>
@@ -6538,7 +5406,6 @@
                 userInventory = userInventory.filter(i => i.unitId !== unitId);
             }
 
-            // Устранение дюпа: если продан последний юнит, который стоит в слоте апгрейдера, очищаем слот!
             if (upgraderState.sourceType === 'unit' && upgraderState.sourceUnit && upgraderState.sourceUnit.id === unitId) {
                 const remaining = userInventory.find(i => i.unitId === unitId && i.qty > 0);
                 if (!remaining) {
@@ -6546,7 +5413,6 @@
                 }
             }
 
-            // Уменьшаем глобальный Hub Exists
             window.modifyHubExists(unitId, -1);
 
             userValBalance += payout;
@@ -6573,7 +5439,6 @@
         };
 
         window.adjustInvItemQty = function(unitId, delta) {
-            // Разрешено только уменьшение количества
             if (delta > 0) return;
             const item = userInventory.find(i => i.unitId === unitId);
             if (!item) return;
@@ -6906,7 +5771,6 @@
             reader.readAsText(file);
         };
 
-        // Защита от случайного закрытия вкладки браузера во время спина
         window.addEventListener('beforeunload', (event) => {
             if (isRouletteSpinning || upgraderState.isSpinning) {
                 event.preventDefault();
@@ -6932,6 +5796,16 @@
             renderHomeWidgets();
             initTelegramIntegration();
             initFirebase();
+
+            // Защита от бесконечной синхронизации в интерфейсе
+            setTimeout(() => {
+                if (!isCloudConnected) {
+                    const badge = document.getElementById('headerCloudText');
+                    if (badge && (badge.innerText === 'Синхронизация...' || badge.innerText.includes('Синхронизация'))) {
+                        badge.innerText = currentLang === 'en' ? 'Local Cache (Ready)' : 'Локальный кэш (Готово)';
+                    }
+                }
+            }, 2500);
         }
 
         if (document.readyState === 'loading') {
