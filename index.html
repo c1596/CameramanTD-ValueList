@@ -245,6 +245,7 @@
         .text-rarity-LEGENDARY { color: #f59e0b; }
         .text-rarity-MYTHIC { color: #ef4444; }
         .text-rarity-EXCLUSIVE { color: #ec4899; }
+        .text-rarity-GAMEPASS { color: #06b6d4; }
         .text-rarity-CRATE { color: #f97316; }
 
         .border-rarity-BASIC { border-color: rgba(148, 163, 184, 0.4); }
@@ -254,7 +255,18 @@
         .border-rarity-LEGENDARY { border-color: rgba(245, 158, 11, 0.55); }
         .border-rarity-MYTHIC { border-color: rgba(239, 68, 68, 0.55); }
         .border-rarity-EXCLUSIVE { border-color: rgba(236, 72, 153, 0.6); }
+        .border-rarity-GAMEPASS { border-color: rgba(6, 182, 212, 0.6); }
         .border-rarity-CRATE { border-color: rgba(249, 115, 22, 0.65); }
+
+        .bg-rarity-BASIC { background-color: rgba(148, 163, 184, 0.15); }
+        .bg-rarity-UNCOMMON { background-color: rgba(34, 197, 94, 0.15); }
+        .bg-rarity-RARE { background-color: rgba(56, 189, 248, 0.15); }
+        .bg-rarity-EPIC { background-color: rgba(168, 85, 247, 0.15); }
+        .bg-rarity-LEGENDARY { background-color: rgba(245, 158, 11, 0.15); }
+        .bg-rarity-MYTHIC { background-color: rgba(239, 68, 68, 0.15); }
+        .bg-rarity-EXCLUSIVE { background-color: rgba(236, 72, 153, 0.15); }
+        .bg-rarity-GAMEPASS { background-color: rgba(102, 255, 0, 0.15); }
+        .bg-rarity-CRATE { background-color: rgba(249, 115, 22, 0.15); }
 
         .roulette-track {
             display: flex;
@@ -267,21 +279,6 @@
             -webkit-user-select: auto !important;
             user-select: auto !important;
             pointer-events: auto !important;
-        }
-
-        .tier-img-box {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-        .tier-img-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
         }
     </style>
 </head>
@@ -302,8 +299,9 @@
 <header class="sticky top-0 z-40 bg-dark-900/95 backdrop-blur-md border-b border-dark-border px-3 py-2.5 sm:px-6 transition-colors duration-200">
     <div class="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
         
-        <div class="flex items-center gap-2 sm:gap-3 cursor-pointer select-none" onclick="handleLogoClick()" title="Главное Меню (5 кликов — вход админа)">
-            <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-600 flex items-center justify-center text-lg text-white shadow-md shadow-blue-500/30 shrink-0">
+        <!-- Клик по логотипу: сразу перекидывает на Главную страницу, плюс считает 5 кликов для входа админа -->
+        <div class="flex items-center gap-2 sm:gap-3 cursor-pointer select-none" onclick="handleLogoClick()" title="На главную (5 кликов — вход админа)">
+            <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-600 flex items-center justify-center text-lg text-white shadow-md shadow-blue-500/30 shrink-0 transform active:scale-95 transition">
                 🎥
             </div>
             <div>
@@ -315,7 +313,7 @@
                     <span id="roleBadge" class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-dark-800 text-slate-400 border border-dark-border">
                         Трейдер
                     </span>
-                    <span id="headerCloudBadge" onclick="showCloudDiagnosticsModal()" class="text-[9px] font-bold px-1.5 py-0.2 rounded themed-online-badge flex items-center gap-1 cursor-pointer hover:opacity-80 transition" title="Нажмите для проверки связи с базой">
+                    <span id="headerCloudBadge" onclick="event.stopPropagation(); showCloudDiagnosticsModal()" class="text-[9px] font-bold px-1.5 py-0.2 rounded themed-online-badge flex items-center gap-1 cursor-pointer hover:opacity-80 transition" title="Нажмите для проверки связи с базой">
                         <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
                         <span id="headerCloudText">Синхронизация...</span>
                     </span>
@@ -368,7 +366,6 @@
 </header>
 
 <main class="flex-1 max-w-7xl w-full mx-auto px-3 py-4 sm:px-6 sm:py-6 space-y-6">
-    <!-- СЕКЦИЯ 0: ГЛАВНАЯ СТРАНИЦА (ХАБ) -->
     <section id="homeSection" class="space-y-6">
         <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-900/40 via-dark-900 to-indigo-950/40 border border-dark-border p-5 sm:p-8 shadow-xl">
             <div class="absolute -right-10 -top-10 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -386,7 +383,7 @@
             </div>
         </div>
 
-        <!-- Быстрый доступ ко всем разделам хаба -->
+        <!-- Разделы хаба -->
         <div class="space-y-2">
             <div class="flex items-center justify-between">
                 <h3 class="text-xs sm:text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5" data-i18n="hub_all_sections_title">
@@ -399,7 +396,7 @@
                     <span class="text-xs font-bold text-white block group-hover:text-blue-400 truncate" data-i18n="card_valuelist">Value List</span>
                     <span class="text-[10px] text-slate-400 block truncate" data-i18n="card_valuelist_desc">Цены и тренды</span>
                 </button>
-                <button onclick="switchMainTab('calculator')" class="p-3 rounded-2xl bg-dark-900 border border-dark-border hover:border-cyan-500 text-left transition unit-card-hover group">
+                <button onclick="switchMainTab('calc')" class="p-3 rounded-2xl bg-dark-900 border border-dark-border hover:border-cyan-500 text-left transition unit-card-hover group">
                     <span class="text-2xl block mb-1">⚖️</span>
                     <span class="text-xs font-bold text-white block group-hover:text-cyan-400 truncate" data-i18n="card_calculator">Калькулятор</span>
                     <span class="text-[10px] text-slate-400 block truncate" data-i18n="card_calculator_desc">W / F / L трейды</span>
@@ -457,11 +454,10 @@
                     <span data-i18n="view_full_catalog">Полный Value List</span> <span>➔</span>
                 </button>
             </div>
-            <div id="homeFeaturedUnitsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5"></div>
+            <div id="homeFeaturedUnitsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5"></div>
         </div>
     </section>
 
-    <!-- СЕКЦИЯ 1: КАТАЛОГ ЮНИТОВ (VALUE LIST) -->
     <section id="catalogSection" class="hidden space-y-4">
         <div class="bg-dark-900 border border-dark-border rounded-2xl p-3 sm:p-4 space-y-3 shadow-sm transition-colors">
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
@@ -474,8 +470,8 @@
 
                 <div class="flex items-center gap-2">
                     <select id="sortSelect" onchange="applyFilters()" class="bg-dark-950 border border-dark-border text-slate-300 text-xs font-medium rounded-xl px-3 py-2 outline-none cursor-pointer">
-                        <option value="auto" selected>✨ Авто: Basic ➔ Mythic / Crate (1 ➔ 10)</option>
-                        <option value="auto_desc">✨ Авто: Crate / Mythic ➔ Basic (10 ➔ 1)</option>
+                        <option value="auto" selected>✨ Авто: Basic ➔ Crate</option>
+                        <option value="auto_desc">✨ Авто: Crate ➔ Basic</option>
                         <option value="val_desc" data-i18n="sort_val_desc">Ценность: Сначала дорогие</option>
                         <option value="val_asc" data-i18n="sort_val_asc">Ценность: Сначала дешевые</option>
                         <option value="game_desc" data-i18n="sort_game_desc">Игровой Val: Сначала дорогие</option>
@@ -488,7 +484,7 @@
                 </div>
             </div>
 
-            <!-- Фильтры редкостей: от Basic до Crate -->
+            <!-- Фильтры редкостей БЕЗ ЦИФР: Basic до Crate -->
             <div class="space-y-2 pt-1 border-t border-dark-border/60">
                 <div class="flex items-center justify-between text-[11px] text-slate-400 font-bold uppercase tracking-wider">
                     <span data-i18n="rarity_label">Редкость:</span>
@@ -499,38 +495,40 @@
                         <span>🌐</span> <span data-i18n="rarity_all">Все</span>
                     </button>
                     <button onclick="selectRarityFilter('BASIC')" data-rarity="BASIC" class="rarity-pill px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-dark-950 border border-slate-500/40 text-slate-300 hover:bg-slate-500/10">
-                        <span class="w-2 h-2 rounded-full bg-slate-400"></span> <span>Basic (1)</span>
+                        <span class="w-2 h-2 rounded-full bg-slate-400"></span> <span>Basic</span>
                     </button>
                     <button onclick="selectRarityFilter('UNCOMMON')" data-rarity="UNCOMMON" class="rarity-pill px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-dark-950 border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span> <span>Uncommon (2)</span>
+                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span> <span>Uncommon</span>
                     </button>
                     <button onclick="selectRarityFilter('RARE')" data-rarity="RARE" class="rarity-pill px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-dark-950 border border-sky-500/40 text-sky-400 hover:bg-sky-500/10">
-                        <span class="w-2 h-2 rounded-full bg-sky-400"></span> <span>Rare (3)</span>
+                        <span class="w-2 h-2 rounded-full bg-sky-400"></span> <span>Rare</span>
                     </button>
                     <button onclick="selectRarityFilter('EPIC')" data-rarity="EPIC" class="rarity-pill px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-dark-950 border border-purple-500/40 text-purple-400 hover:bg-purple-500/10">
-                        <span class="w-2 h-2 rounded-full bg-purple-400"></span> <span>Epic (4)</span>
+                        <span class="w-2 h-2 rounded-full bg-purple-400"></span> <span>Epic</span>
                     </button>
                     <button onclick="selectRarityFilter('LEGENDARY')" data-rarity="LEGENDARY" class="rarity-pill px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-dark-950 border border-amber-500/40 text-amber-400 hover:bg-amber-500/10">
-                        <span class="w-2 h-2 rounded-full bg-amber-400"></span> <span>Legendary (5)</span>
+                        <span class="w-2 h-2 rounded-full bg-amber-400"></span> <span>Legendary</span>
                     </button>
                     <button onclick="selectRarityFilter('MYTHIC')" data-rarity="MYTHIC" class="rarity-pill px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-dark-950 border border-rose-500/40 text-rose-400 hover:bg-rose-500/10">
-                        <span class="w-2 h-2 rounded-full bg-rose-400"></span> <span>Mythic (6)</span>
+                        <span class="w-2 h-2 rounded-full bg-rose-400"></span> <span>Mythic</span>
                     </button>
                     <button onclick="selectRarityFilter('EXCLUSIVE')" data-rarity="EXCLUSIVE" class="rarity-pill px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-dark-950 border border-pink-500/40 text-pink-400 hover:bg-pink-500/10">
-                        <span class="w-2 h-2 rounded-full bg-pink-400"></span> <span>Exclusive (7)</span>
+                        <span class="w-2 h-2 rounded-full bg-pink-400"></span> <span>Exclusive</span>
+                    </button>
+                    <button onclick="selectRarityFilter('GAMEPASS')" data-rarity="GAMEPASS" class="rarity-pill px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-dark-950 border border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10">
+                        <span class="w-2 h-2 rounded-full bg-cyan-400"></span> <span>Gamepass</span>
                     </button>
                     <button onclick="selectRarityFilter('CRATE')" data-rarity="CRATE" class="rarity-pill px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-dark-950 border border-orange-500/40 text-orange-400 hover:bg-orange-500/10">
-                        <span class="w-2 h-2 rounded-full bg-orange-500"></span> <span>Crate (10)</span>
+                        <span class="w-2 h-2 rounded-full bg-orange-500"></span> <span>Crate</span>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Сетка карточек юнитов с выделенной строчкой тренда -->
-        <div id="catalogGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-2.5 sm:gap-3.5"></div>
+        <!-- 6 юнитов в ряд на экранах xl -->
+        <div id="catalogGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 sm:gap-3.5"></div>
     </section>
 
-    <!-- СЕКЦИЯ 2: АПГРЕЙДЕР -->
     <section id="upgraderSection" class="hidden space-y-4">
         <div class="bg-dark-900 border border-dark-border rounded-3xl p-3.5 sm:p-6 space-y-5 shadow-2xl relative overflow-hidden transition-colors">
             
@@ -554,14 +552,13 @@
                         <span id="upgraderBalanceDisplay" class="text-sm font-black text-emerald-400">0</span>
                         <span class="text-xs text-emerald-500 font-bold">🪙 Val</span>
                     </div>
-                    <!-- Кнопка бонуса -->
                     <button onclick="claimBailoutBonus()" id="bailoutBonusBtn" class="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-emerald-500 hover:from-amber-400 hover:to-emerald-400 text-slate-950 font-black text-xs rounded-xl shadow-md transition transform hover:scale-105 active:scale-95 whitespace-nowrap" title="Бонус доступен при балансе менее 120 Val">
                         🎁 <span id="bailoutBtnText">+20 Val</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Главная арена: Слоты и Колесо шансов -->
+            <!-- Главная арена апгрейдера -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
                 <!-- ЛЕВЫЙ СЛОТ: СТАВКА -->
                 <div id="upgSourceSlotCard" onclick="openUpgraderSlotPicker('source')" class="lg:col-span-4 bg-dark-950/80 hover:bg-dark-950 border-2 border-dashed border-dark-border hover:border-cyan-500/80 rounded-2xl p-4 flex flex-col justify-between h-72 shadow-inner cursor-pointer transition group relative">
@@ -591,7 +588,7 @@
                     </div>
                 </div>
 
-                <!-- ЦЕНТРАЛЬНЫЙ БЛОК: СИНХРОНИЗИРОВАННОЕ КОЛЕСО -->
+                <!-- ЦЕНТРАЛЬНЫЙ БЛОК: КОЛЕСО СО СТРЕЛКОЙ И ПОДСВЕТКОЙ СЕКТОРА -->
                 <div class="lg:col-span-4 flex flex-col items-center justify-center space-y-3">
                     <div class="relative w-64 h-64 flex items-center justify-center">
                         <canvas id="upgraderWheelCanvas" width="256" height="256" class="rounded-full shadow-2xl"></canvas>
@@ -662,7 +659,6 @@
         </div>
     </section>
 
-    <!-- СЕКЦИЯ 3: КАЛЬКУЛЯТОР ТРЕЙДОВ -->
     <section id="calcSection" class="hidden space-y-4">
         <div class="bg-dark-900 border border-dark-border rounded-2xl p-3 sm:p-5 space-y-4 shadow-sm transition-colors">
             
@@ -762,7 +758,6 @@
         </div>
     </section>
 
-    <!-- СЕКЦИЯ 4: СИМУЛЯТОР КЕЙСОВ -->
     <section id="cratesSection" class="hidden space-y-4">
         <div class="bg-dark-900 border border-dark-border rounded-2xl p-3 sm:p-5 space-y-4 shadow-sm transition-colors">
             
@@ -784,11 +779,22 @@
                 </div>
             </div>
 
+            <!-- Вкладки кейсов: Общие vs Мои кейсы из инвентаря -->
+            <div class="flex items-center gap-2 bg-dark-950 p-1.5 rounded-2xl border border-dark-border max-w-md">
+                <button onclick="switchCratesSubTab('hub')" id="cratesTabHubBtn" class="flex-1 py-1.5 rounded-xl text-xs font-bold transition bg-amber-600 text-white shadow-sm flex items-center justify-center gap-1.5">
+                    <span>📦</span> <span>Официальные кейсы</span>
+                </button>
+                <button onclick="switchCratesSubTab('inventory')" id="cratesTabInvBtn" class="flex-1 py-1.5 rounded-xl text-xs font-bold transition text-slate-400 hover:text-white flex items-center justify-center gap-1.5">
+                    <span>🎒</span> <span>Твои кейсы (из инвентаря)</span>
+                </button>
+            </div>
+
+            <!-- АРЕНА РУЛЕТКИ -->
             <div id="crateRouletteArea" class="bg-dark-950 border border-dark-border rounded-2xl p-4 space-y-4 relative overflow-hidden">
                 <div class="flex flex-col md:flex-row items-center justify-between gap-4">
                     <div class="flex items-center gap-3 w-full md:w-auto">
-                        <div class="w-12 h-12 rounded-xl bg-dark-900 border border-dark-border p-1 flex items-center justify-center overflow-hidden shrink-0">
-                            <img id="activeCrateImg" src="" class="max-h-full max-w-full object-contain" alt="Crate">
+                        <div class="w-14 h-14 rounded-xl bg-dark-900 border border-dark-border p-1 flex items-center justify-center overflow-hidden shrink-0">
+                            <img id="activeCrateImg" src="https://placehold.co/180x180/131f37/38bdf8?text=Crate" class="max-h-full max-w-full object-contain" alt="Crate">
                         </div>
                         <div>
                             <div class="flex items-center gap-2">
@@ -802,24 +808,25 @@
                         </div>
                     </div>
                     <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
-                        <button onclick="spinActiveCrate(1)" id="spinCrateBtn1" class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-xs sm:text-sm rounded-xl shadow-lg transition transform hover:scale-105 active:scale-95 flex items-center gap-1.5 whitespace-nowrap">
+                        <button onclick="spinActiveCrate(1)" id="spinCrateBtn1" class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-lg transition transform hover:scale-105 active:scale-95 flex items-center gap-1.5 whitespace-nowrap cursor-pointer">
                             <span>🎰</span> <span data-i18n="crate_spin_btn">Открыть x1</span>
                         </button>
-                        <button onclick="spinActiveCrate(5)" id="spinCrateBtn5" class="px-4 py-2.5 bg-dark-900 hover:bg-dark-850 border border-amber-500/40 text-amber-400 font-black text-xs sm:text-sm rounded-xl transition active:scale-95 whitespace-nowrap">
+                        <button onclick="spinActiveCrate(5)" id="spinCrateBtn5" class="px-4 py-2.5 bg-dark-900 hover:bg-dark-850 border border-amber-500/40 text-amber-400 font-black text-xs sm:text-sm rounded-xl transition active:scale-95 whitespace-nowrap cursor-pointer">
                             x5
                         </button>
-                        <button onclick="spinActiveCrate(10)" id="spinCrateBtn10" class="px-4 py-2.5 bg-dark-900 hover:bg-dark-850 border border-amber-500/40 text-amber-400 font-black text-xs sm:text-sm rounded-xl transition active:scale-95 whitespace-nowrap">
+                        <button onclick="spinActiveCrate(10)" id="spinCrateBtn10" class="px-4 py-2.5 bg-dark-900 hover:bg-dark-850 border border-amber-500/40 text-amber-400 font-black text-xs sm:text-sm rounded-xl transition active:scale-95 whitespace-nowrap cursor-pointer">
                             x10
                         </button>
                     </div>
                 </div>
 
+                <!-- Полотно рулетки с вертикальным указателем -->
                 <div class="relative w-full h-36 bg-dark-900 rounded-xl border border-dark-border/80 overflow-hidden shadow-inner flex items-center">
                     <div class="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-1 bg-amber-400 z-20 shadow-lg shadow-amber-400 pointer-events-none"></div>
                     <div class="absolute left-1/2 -translate-x-1/2 top-1 text-amber-400 text-xs z-20 pointer-events-none">▼</div>
                     <div class="absolute left-1/2 -translate-x-1/2 bottom-1 text-amber-400 text-xs z-20 pointer-events-none">▲</div>
 
-                    <div id="rouletteTrack" class="roulette-track pl-4 flex items-center gap-2"></div>
+                    <div id="rouletteTrack" class="roulette-track flex items-center gap-2 pl-4"></div>
                 </div>
 
                 <div class="bg-dark-900/60 p-3 rounded-xl border border-dark-border/60">
@@ -842,17 +849,26 @@
                 </div>
             </div>
 
-            <div class="space-y-2">
+            <!-- СПИСКИ КЕЙСОВ -->
+            <div id="hubCratesContainer" class="space-y-2">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider" data-i18n="crates_available">Созданные кейсы:</h3>
+                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider" data-i18n="crates_available">Доступные кейсы:</h3>
                     <span id="cratesCountBadge" class="text-xs font-mono font-bold text-amber-400">0 шт.</span>
                 </div>
                 <div id="cratesListGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
             </div>
+
+            <!-- Вкладка кейсов из инвентаря игрока -->
+            <div id="playerInvCratesContainer" class="hidden space-y-2">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold text-purple-300 uppercase tracking-wider">Кейсы в твоем инвентаре (Открытие тратит кейс):</h3>
+                    <span id="invCratesCountBadge" class="text-xs font-mono font-bold text-purple-400">0 шт.</span>
+                </div>
+                <div id="playerInvCratesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
+            </div>
         </div>
     </section>
 
-    <!-- СЕКЦИЯ 5: БОЕВАЯ ВИКИПЕДИЯ -->
     <section id="wikiSection" class="hidden space-y-4">
         <div class="bg-dark-900 border border-dark-border rounded-2xl p-3 sm:p-5 space-y-4 shadow-sm transition-colors">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-dark-border">
@@ -862,7 +878,7 @@
                     </div>
                     <div>
                         <h2 class="text-sm sm:text-base font-bold text-white" data-i18n="wiki_title">Боевая Википедия (Характеристики и Прокачка)</h2>
-                        <p class="text-[11px] text-slate-400" data-i18n="wiki_sub">Уровни прокачки, урон, радиус, кулдаун, дельты и авто-расчет DPS</p>
+                        <p class="text-[11px] text-slate-400">Уровни прокачки, урон/доход, типы атак и цена продажи (25% от общей стоимости)</p>
                     </div>
                 </div>
 
@@ -882,7 +898,6 @@
         </div>
     </section>
 
-    <!-- СЕКЦИЯ 6: ТИР-ЛИСТ ПЕРСОНАЖЕЙ (БЕЗ СЖАТИЯ ФОТО) -->
     <section id="tierListSection" class="hidden space-y-4">
         <div class="bg-dark-900 border border-dark-border rounded-2xl p-3 sm:p-5 space-y-4 shadow-sm transition-colors">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-dark-border">
@@ -984,7 +999,6 @@
         </div>
     </section>
 
-    <!-- СЕКЦИЯ 7: ИНВЕНТАРЬ -->
     <section id="inventorySection" class="hidden space-y-4">
         <div class="bg-dark-900 border border-dark-border rounded-2xl p-3 sm:p-5 space-y-4 shadow-sm transition-colors">
             <div class="flex items-center justify-between pb-3 border-b border-dark-border">
@@ -1040,7 +1054,6 @@
         </div>
     </section>
 
-    <!-- СЕКЦИЯ 8: ПАНЕЛЬ ГЛАВНОГО АДМИНИСТРАТОРА -->
     <section id="adminSection" class="hidden space-y-5">
         <div class="bg-dark-900 border border-dark-border rounded-3xl p-4 sm:p-6 space-y-5 shadow-2xl transition-colors">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-dark-border">
@@ -1066,7 +1079,7 @@
                 </div>
             </div>
 
-            <!-- НАВИГАЦИЯ ВНУТРИ АДМИНКИ -->
+            <!-- Вкладки админки -->
             <div class="flex flex-wrap gap-2 border-b border-dark-border/60 pb-3">
                 <button onclick="switchAdminTab('economy')" id="adminTabBtn_economy" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition bg-emerald-600 text-white shadow-sm" data-i18n="admin_tab_economy">
                     💰 Экономика
@@ -1085,7 +1098,7 @@
                 </button>
             </div>
 
-            <!-- ВКЛАДКА АДМИНКИ: СПИСОК ВСЕХ ИГРОКОВ TELEGRAM -->
+            <!-- ИГРОКИ TELEGRAM -->
             <div id="adminTabContent_players" class="hidden space-y-4">
                 <div class="flex items-center justify-between">
                     <h4 class="text-xs font-bold text-white uppercase tracking-wider">Все зарегистрированные игроки (Telegram & Сайт):</h4>
@@ -1110,7 +1123,7 @@
                 </div>
             </div>
 
-            <!-- ВКЛАДКА АДМИНКИ: ЭКОНОМИКА -->
+            <!-- ЭКОНОМИКА -->
             <div id="adminTabContent_economy" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-dark-950 border border-dark-border rounded-2xl p-4 space-y-3">
@@ -1134,7 +1147,7 @@
                                 <label class="text-slate-400 block mb-1">Процент возврата монет при продаже юнита (%):</label>
                                 <input type="number" id="adminSettingSellPercent" value="100" min="10" max="100" class="w-full bg-dark-900 border border-dark-border rounded-xl px-3 py-1.5 text-white font-mono font-bold outline-none">
                             </div>
-                            <button onclick="saveAdminEconomySettings()" class="w-full py-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-black text-xs rounded-xl shadow transition">
+                            <button onclick="saveAdminEconomySettings()" class="w-full py-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-black text-xs rounded-xl shadow transition cursor-pointer">
                                 Сохранить параметры экономики
                             </button>
                         </div>
@@ -1151,18 +1164,18 @@
                                 <input type="number" id="adminCustomBalanceInput" placeholder="1000" class="w-full bg-dark-900 border border-dark-border rounded-xl px-3 py-1.5 text-white font-mono font-bold outline-none">
                             </div>
                             <div class="grid grid-cols-2 gap-2">
-                                <button onclick="setPlayerBalanceFromAdmin()" class="py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition">
+                                <button onclick="setPlayerBalanceFromAdmin()" class="py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition cursor-pointer">
                                     Задать баланс
                                 </button>
-                                <button onclick="addPlayerBalanceFromAdmin(1000)" class="py-2 bg-dark-900 hover:bg-dark-850 border border-emerald-500/40 text-emerald-300 font-bold rounded-xl text-xs transition">
+                                <button onclick="addPlayerBalanceFromAdmin(1000)" class="py-2 bg-dark-900 hover:bg-dark-850 border border-emerald-500/40 text-emerald-300 font-bold rounded-xl text-xs transition cursor-pointer">
                                     +1 000 Val
                                 </button>
                             </div>
                             <div class="grid grid-cols-2 gap-2">
-                                <button onclick="addPlayerBalanceFromAdmin(10000)" class="py-1.5 bg-dark-900 hover:bg-dark-850 border border-amber-500/40 text-amber-300 font-bold rounded-xl text-xs transition">
+                                <button onclick="addPlayerBalanceFromAdmin(10000)" class="py-1.5 bg-dark-900 hover:bg-dark-850 border border-amber-500/40 text-amber-300 font-bold rounded-xl text-xs transition cursor-pointer">
                                     +10 000 Val
                                 </button>
-                                <button onclick="resetPlayerBalanceFromAdmin()" class="py-1.5 bg-dark-900 hover:bg-rose-950/40 border border-rose-500/40 text-rose-400 font-bold rounded-xl text-xs transition">
+                                <button onclick="resetPlayerBalanceFromAdmin()" class="py-1.5 bg-dark-900 hover:bg-rose-950/40 border border-rose-500/40 text-rose-400 font-bold rounded-xl text-xs transition cursor-pointer">
                                     Обнулить баланс
                                 </button>
                             </div>
@@ -1171,7 +1184,7 @@
                 </div>
             </div>
 
-            <!-- ВКЛАДКА АДМИНКИ: КАТАЛОГ -->
+            <!-- КАТАЛОГ СОРТИРОВАН: BASIC ДО CRATE -->
             <div id="adminTabContent_units" class="hidden space-y-4">
                 <div class="border border-dark-border rounded-xl overflow-hidden bg-dark-950">
                     <div class="overflow-x-auto">
@@ -1193,7 +1206,7 @@
                 </div>
             </div>
 
-            <!-- ВКЛАДКА АДМИНКИ: КЕЙСЫ -->
+            <!-- КЕЙСЫ -->
             <div id="adminTabContent_crates" class="hidden space-y-4">
                 <div class="flex items-center justify-between">
                     <h4 class="text-xs font-bold text-white uppercase tracking-wider">Все созданные кейсы:</h4>
@@ -1204,7 +1217,7 @@
                 <div id="adminCratesTableList" class="space-y-2"></div>
             </div>
 
-            <!-- ВКЛАДКА АДМИНКИ: ИНТЕГРАЦИИ -->
+            <!-- ИНТЕГРАЦИИ -->
             <div id="adminTabContent_integrations" class="hidden space-y-4">
                 <div class="bg-dark-950 border border-indigo-500/30 rounded-2xl p-3.5 sm:p-4 space-y-3">
                     <div class="flex items-center justify-between">
@@ -1221,10 +1234,10 @@
                         <input type="text" id="discordWebhookInput" placeholder="https://discord.com/api/webhooks/..." 
                                class="flex-1 bg-dark-900 border border-dark-border focus:border-indigo-500 rounded-xl px-3 py-2 text-xs font-mono text-white outline-none">
                         <div class="flex items-center gap-2">
-                            <button onclick="saveDiscordWebhook()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition shadow-sm whitespace-nowrap">
+                            <button onclick="saveDiscordWebhook()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition shadow-sm whitespace-nowrap cursor-pointer">
                                 Сохранить Webhook
                             </button>
-                            <button onclick="testDiscordWebhook()" class="px-3 py-2 bg-dark-900 hover:bg-dark-850 border border-dark-border text-slate-300 text-xs font-bold rounded-xl transition whitespace-nowrap">
+                            <button onclick="testDiscordWebhook()" class="px-3 py-2 bg-dark-900 hover:bg-dark-850 border border-dark-border text-slate-300 text-xs font-bold rounded-xl transition whitespace-nowrap cursor-pointer">
                                 🔔 Тест
                             </button>
                         </div>
@@ -1244,13 +1257,13 @@
                     </div>
 
                     <div class="flex flex-wrap gap-2 pt-1">
-                        <button onclick="forceSyncToCloud(true)" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                        <button onclick="forceSyncToCloud(true)" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer">
                             <span>🚀</span> <span>Записать всю базу в Firestore</span>
                         </button>
-                        <button onclick="pullDataFromCloudManual()" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                        <button onclick="pullDataFromCloudManual()" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer">
                             <span>📥</span> <span>Загрузить из Cloud на устройство</span>
                         </button>
-                        <button onclick="clearLiveTickerDrops()" class="px-3 py-2 bg-rose-900/40 hover:bg-rose-900/60 border border-rose-500/40 text-rose-300 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                        <button onclick="clearLiveTickerDrops()" class="px-3 py-2 bg-rose-900/40 hover:bg-rose-900/60 border border-rose-500/40 text-rose-300 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
                             <span>🧹</span> <span>Очистить историю дропов</span>
                         </button>
                     </div>
@@ -1259,7 +1272,7 @@
                     </div>
                 </div>
 
-                <!-- Статистика и экспорт -->
+                <!-- Экспорт -->
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                     <div class="bg-dark-950 border border-dark-border p-3 rounded-xl">
                         <span class="text-[10px] font-bold text-slate-400 uppercase block">Всего предметов:</span>
@@ -1276,7 +1289,7 @@
                     <div class="bg-dark-950 border border-dark-border p-3 rounded-xl">
                         <span class="text-[10px] font-bold text-slate-400 uppercase block">Экспорт базы:</span>
                         <div class="flex gap-1 mt-1">
-                            <button onclick="exportDataJson()" class="px-2 py-1 bg-dark-900 hover:bg-dark-850 border border-dark-border rounded text-[10px] font-bold text-slate-300">JSON</button>
+                            <button onclick="exportDataJson()" class="px-2 py-1 bg-dark-900 hover:bg-dark-850 border border-dark-border rounded text-[10px] font-bold text-slate-300 cursor-pointer">JSON</button>
                             <label class="px-2 py-1 bg-dark-900 hover:bg-dark-850 border border-dark-border rounded text-[10px] font-bold text-slate-300 cursor-pointer">
                                 Импорт <input type="file" onchange="handleImportJson(event)" accept=".json" class="hidden">
                             </label>
@@ -1296,7 +1309,7 @@
     <button onclick="switchMainTab('catalog')" class="flex flex-col items-center gap-0.5 py-1 px-2 text-slate-400 font-bold text-[11px] hover:text-white">
         <span class="text-lg">📹</span> <span data-i18n="card_valuelist">Юниты</span>
     </button>
-    <button onclick="switchMainTab('calculator')" class="flex flex-col items-center gap-0.5 py-1 px-2 text-slate-400 font-bold text-[11px] hover:text-white">
+    <button onclick="switchMainTab('calc')" class="flex flex-col items-center gap-0.5 py-1 px-2 text-slate-400 font-bold text-[11px] hover:text-white">
         <span class="text-lg">⚖️</span> <span data-i18n="card_calculator">Трейды</span>
     </button>
     <button onclick="switchMainTab('upgrader')" class="flex flex-col items-center gap-0.5 py-1 px-2 text-amber-400 font-bold text-[11px]">
@@ -1307,7 +1320,7 @@
     </button>
 </nav>
 
-<!-- Выдвижное модальное Меню -->
+<!-- Модальное окно Меню -->
 <div id="appMenuModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-dark-900 border border-dark-border rounded-t-2xl sm:rounded-2xl w-full max-w-md p-4 sm:p-5 space-y-3 shadow-2xl max-h-[85vh] overflow-y-auto anim-modal">
         <div class="flex items-center justify-between pb-2.5 border-b border-dark-border">
@@ -1326,7 +1339,6 @@
                 </div>
                 <span class="text-xs text-slate-500">➔</span>
             </button>
-
             <button onclick="navigateFromMenu('catalog')" class="w-full flex items-center justify-between p-2.5 rounded-xl bg-dark-950 hover:bg-dark-850 border border-dark-border text-left transition group">
                 <div class="flex items-center gap-2.5">
                     <span class="text-base">📹</span>
@@ -1334,7 +1346,6 @@
                 </div>
                 <span class="text-xs text-slate-500">➔</span>
             </button>
-
             <button onclick="navigateFromMenu('upgrader')" class="w-full flex items-center justify-between p-2.5 rounded-xl bg-dark-950 hover:bg-dark-850 border border-amber-500/30 text-left transition group">
                 <div class="flex items-center gap-2.5">
                     <span class="text-base">⚡</span>
@@ -1342,7 +1353,6 @@
                 </div>
                 <span class="text-xs text-amber-400">➔</span>
             </button>
-
             <button onclick="navigateFromMenu('crates')" class="w-full flex items-center justify-between p-2.5 rounded-xl bg-dark-950 hover:bg-dark-850 border border-dark-border text-left transition group">
                 <div class="flex items-center gap-2.5">
                     <span class="text-base">📦</span>
@@ -1350,7 +1360,6 @@
                 </div>
                 <span class="text-xs text-slate-500">➔</span>
             </button>
-
             <button onclick="navigateFromMenu('wiki')" class="w-full flex items-center justify-between p-2.5 rounded-xl bg-dark-950 hover:bg-dark-850 border border-dark-border text-left transition group">
                 <div class="flex items-center gap-2.5">
                     <span class="text-base">📖</span>
@@ -1358,7 +1367,6 @@
                 </div>
                 <span class="text-xs text-slate-500">➔</span>
             </button>
-
             <button onclick="navigateFromMenu('inventory')" class="w-full flex items-center justify-between p-2.5 rounded-xl bg-dark-950 hover:bg-dark-850 border border-dark-border text-left transition group">
                 <div class="flex items-center gap-2.5">
                     <span class="text-base">🎒</span>
@@ -1366,7 +1374,6 @@
                 </div>
                 <span class="text-xs text-slate-500">➔</span>
             </button>
-
             <button onclick="navigateFromMenu('tierlist')" class="w-full flex items-center justify-between p-2.5 rounded-xl bg-dark-950 hover:bg-dark-850 border border-dark-border text-left transition group">
                 <div class="flex items-center gap-2.5">
                     <span class="text-base">🏆</span>
@@ -1374,7 +1381,6 @@
                 </div>
                 <span class="text-xs text-slate-500">➔</span>
             </button>
-
             <button id="menuAdminBtn" onclick="navigateFromMenu('admin')" class="hidden w-full flex items-center justify-between p-2.5 rounded-xl bg-emerald-950/40 hover:bg-emerald-950/70 border border-emerald-500/40 text-left transition">
                 <div class="flex items-center gap-2.5">
                     <span class="text-base">👑</span>
@@ -1389,6 +1395,22 @@
                 Закрыть меню
             </button>
         </div>
+    </div>
+</div>
+
+<!-- Модальное окно результата Апгрейдера (WIN / LOSE) -->
+<div id="upgraderResultModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-3">
+    <div id="upgResultCard" class="bg-dark-900 border rounded-3xl w-full max-w-sm p-6 space-y-4 shadow-2xl anim-modal text-center">
+        <div id="upgResultIcon" class="text-5xl">🎉</div>
+        <h3 id="upgResultTitle" class="text-xl font-black uppercase tracking-wider">УСПЕХ!</h3>
+        <p id="upgResultDesc" class="text-xs text-slate-300"></p>
+        <div class="w-28 h-28 mx-auto rounded-2xl bg-dark-950 border border-dark-border p-2 flex items-center justify-center overflow-hidden">
+            <img id="upgResultImg" src="" class="max-h-full max-w-full object-contain">
+        </div>
+        <div id="upgResultUnitName" class="text-sm font-bold text-white"></div>
+        <button onclick="closeUpgraderResultModal()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md transition cursor-pointer">
+            Забрать
+        </button>
     </div>
 </div>
 
@@ -1456,27 +1478,28 @@
         <div class="space-y-2.5 text-xs">
             <div>
                 <label class="text-slate-400 block mb-1" data-i18n="modal_unit_name">Название персонажа:</label>
-                <input type="text" id="itemNameInput" placeholder="Например: Upgraded Titan Cameraman" class="w-full bg-dark-950 border border-dark-border rounded-xl px-3 py-2 text-white outline-none">
+                <input type="text" id="itemNameInput" placeholder="Например: Scientist Crate" class="w-full bg-dark-950 border border-dark-border rounded-xl px-3 py-2 text-white outline-none">
             </div>
             <div class="grid grid-cols-2 gap-2">
                 <div>
                     <label class="text-slate-400 block mb-1" data-i18n="modal_unit_rarity">Редкость:</label>
-                    <select id="itemRaritySelect" class="w-full bg-dark-950 border border-dark-border rounded-xl px-2.5 py-2 text-white outline-none font-bold">
-                        <option value="BASIC">Basic (1)</option>
-                        <option value="UNCOMMON">Uncommon (2)</option>
-                        <option value="RARE">Rare (3)</option>
-                        <option value="EPIC">Epic (4)</option>
-                        <option value="LEGENDARY">Legendary (5)</option>
-                        <option value="MYTHIC">Mythic (6)</option>
-                        <option value="EXCLUSIVE">Exclusive (7)</option>
-                        <option value="CRATE">Crate (10)</option>
+                    <select id="itemRaritySelect" onchange="toggleCrateDropsSectionInUnitEditor(this.value)" class="w-full bg-dark-950 border border-dark-border rounded-xl px-2.5 py-2 text-white outline-none font-bold">
+                        <option value="BASIC">Basic</option>
+                        <option value="UNCOMMON">Uncommon</option>
+                        <option value="RARE">Rare</option>
+                        <option value="EPIC">Epic</option>
+                        <option value="LEGENDARY">Legendary</option>
+                        <option value="MYTHIC">Mythic</option>
+                        <option value="EXCLUSIVE">Exclusive</option>
+                        <option value="GAMEPASS">Gamepass</option>
+                        <option value="CRATE">Crate</option>
                     </select>
                 </div>
                 <div>
                     <label class="text-slate-400 block mb-1" data-i18n="modal_unit_class">Класс:</label>
                     <select id="itemCategorySelect" class="w-full bg-dark-950 border border-dark-border rounded-xl px-2.5 py-2 text-white outline-none">
-                        <option value="titans">Титан</option>
                         <option value="combat">Боевой (DPS)</option>
+                        <option value="titans">Титан</option>
                         <option value="farm">Фарм</option>
                         <option value="support">Саппорт</option>
                         <option value="crates">Ящик / Крейт</option>
@@ -1521,6 +1544,15 @@
                 </div>
             </div>
 
+            <!-- СПЕЦИАЛЬНЫЙ БЛОК ДРОПОВ: ДЛЯ ЮНИТОВ РЕДКОСТИ CRATE -->
+            <div id="unitCrateDropsConfigBox" class="hidden space-y-2 p-2.5 bg-dark-950 rounded-xl border border-orange-500/40">
+                <div class="flex items-center justify-between">
+                    <span class="font-bold text-orange-400">Дропы внутри этого Крейта (%):</span>
+                    <span id="unitCrateTotalChanceBadge" class="text-[10px] font-mono font-bold text-amber-400">Сумма: 0%</span>
+                </div>
+                <div id="unitCrateDropsList" class="space-y-1.5 max-h-40 overflow-y-auto pr-1"></div>
+            </div>
+
             <div class="grid grid-cols-2 gap-2 pt-1 border-t border-dark-border/60">
                 <div>
                     <label class="text-slate-400 block mb-1" data-i18n="modal_limit">Лимит на карте:</label>
@@ -1555,11 +1587,11 @@
         </div>
         <input type="text" id="pickerSearchInput" oninput="renderUnitPickerList()" placeholder="Быстрый поиск..." 
                class="w-full bg-dark-950 border border-dark-border focus:border-blue-500 rounded-xl px-3 py-2 text-xs text-white outline-none">
-        <div id="pickerGrid" class="flex-1 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 pr-1"></div>
+        <div id="pickerGrid" class="flex-1 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 pr-1"></div>
     </div>
 </div>
 
-<!-- Модальное окно конструктора кейса -->
+<!-- Модальное окно конструктора кейса (С ДИНАМИЧЕСКИМ СЧЕТЧИКОМ ШАНСОВ) -->
 <div id="crateBuilderModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-3">
     <div class="bg-dark-900 border border-dark-border rounded-2xl w-full max-w-lg p-4 sm:p-5 space-y-3.5 shadow-2xl max-h-[90vh] overflow-y-auto anim-modal">
         <div class="flex items-center justify-between pb-2 border-b border-dark-border">
@@ -1602,7 +1634,7 @@
             <div class="space-y-2 pt-2 border-t border-dark-border">
                 <div class="flex items-center justify-between">
                     <label class="text-slate-300 font-bold">Выпадающие юниты и шансы (%):</label>
-                    <span id="crateTotalChanceBadge" class="text-[11px] font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-lg border border-amber-500/20">Сумма: 0%</span>
+                    <span id="crateTotalChanceBadge" class="text-[11px] font-mono font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/30">Сумма: 0%</span>
                 </div>
                 <div id="crateDropsSelectorList" class="space-y-2 max-h-52 overflow-y-auto pr-1 bg-dark-950 p-2.5 rounded-xl border border-dark-border"></div>
             </div>
@@ -1610,7 +1642,7 @@
 
         <div class="pt-2 flex justify-end gap-2 border-t border-dark-border">
             <button onclick="closeCrateBuilderModal()" class="px-3 py-2 bg-dark-950 text-slate-400 text-xs font-bold rounded-xl" data-i18n="btn_cancel">Отмена</button>
-            <button onclick="saveCrateFromModal()" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-xl shadow-md" data-i18n="btn_save">Сохранить кейс</button>
+            <button onclick="saveCrateFromModal()" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-xl shadow-md cursor-pointer" data-i18n="btn_save">Сохранить кейс</button>
         </div>
     </div>
 </div>
@@ -1625,14 +1657,13 @@
         
         <div id="multiCrateWonGrid" class="grid grid-cols-2 sm:grid-cols-5 gap-3 max-h-[60vh] overflow-y-auto py-2"></div>
         
-        <!-- КНОПКА ПОФИКШЕНА: closeMultiCrateWonModal() гарантированно закрывает окно и обновляет баланс/инвентарь -->
         <button onclick="closeMultiCrateWonModal()" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-sm sm:text-base rounded-2xl shadow-lg transition transform hover:scale-[1.02] active:scale-95 cursor-pointer">
             Круто, забрать всё!
         </button>
     </div>
 </div>
 
-<!-- Модальное окно уровней в Вики -->
+<!-- Модальное окно уровней в Вики с выбором типа атаки Single/Farm/Aoe/Splash -->
 <div id="wikiLevelEditorModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-3">
     <div class="bg-dark-900 border border-dark-border rounded-2xl w-full max-w-md p-4 sm:p-5 space-y-3.5 shadow-2xl max-h-[90vh] overflow-y-auto anim-modal">
         <div class="flex items-center justify-between pb-2 border-b border-dark-border">
@@ -1650,37 +1681,61 @@
                     <input type="number" id="wikiLvlNumInput" min="1" max="99" value="1" class="w-full bg-dark-950 border border-dark-border rounded-xl px-3 py-2 text-white font-mono font-bold outline-none">
                 </div>
                 <div>
-                    <label class="text-slate-400 block mb-1">Стоимость прокачки (ЦЕНА):</label>
-                    <input type="number" id="wikiLvlCostInput" placeholder="100" class="w-full bg-dark-950 border border-dark-border rounded-xl px-3 py-2 text-white font-mono font-bold outline-none">
+                    <label class="text-slate-400 block mb-1">Тип атаки:</label>
+                    <select id="wikiLvlAttackTypeSelect" onchange="handleWikiAttackTypeChange(this.value)" class="w-full bg-dark-950 border border-dark-border rounded-xl px-2.5 py-2 text-white font-bold outline-none">
+                        <option value="Single">Single (Одиночная)</option>
+                        <option value="Aoe">Aoe (По области)</option>
+                        <option value="Splash">Splash (Всплеск)</option>
+                        <option value="Farm">Farm (Ферма монет)</option>
+                    </select>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-2">
-                <div>
-                    <label class="text-slate-400 block mb-1">Урон (УРОН):</label>
-                    <input type="number" id="wikiLvlDmgInput" oninput="updateWikiModalDpsPreview()" placeholder="8" class="w-full bg-dark-950 border border-dark-border rounded-xl px-3 py-2 text-white font-mono font-bold outline-none">
+            <div>
+                <label class="text-slate-400 block mb-1">Цена уровня (Price, $):</label>
+                <input type="number" id="wikiLvlCostInput" oninput="updateWikiModalDpsPreview()" placeholder="500" class="w-full bg-dark-950 border border-dark-border rounded-xl px-3 py-2 text-white font-mono font-bold outline-none">
+            </div>
+
+            <!-- Поля боевого юнита -->
+            <div id="wikiCombatFieldsGroup" class="space-y-2">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-slate-400 block mb-1">Урон (Damage):</label>
+                        <input type="number" id="wikiLvlDmgInput" oninput="updateWikiModalDpsPreview()" placeholder="100" class="w-full bg-dark-950 border border-dark-border rounded-xl px-3 py-2 text-white font-mono font-bold outline-none">
+                    </div>
+                    <div>
+                        <label class="text-slate-400 block mb-1">Кулдаун (сек):</label>
+                        <input type="number" step="0.1" id="wikiLvlCdInput" oninput="updateWikiModalDpsPreview()" placeholder="1.0" class="w-full bg-dark-950 border border-dark-border rounded-xl px-3 py-2 text-white font-mono font-bold outline-none">
+                    </div>
                 </div>
                 <div>
-                    <label class="text-slate-400 block mb-1">Кулдаун (КД, сек):</label>
-                    <input type="number" step="0.1" id="wikiLvlCdInput" oninput="updateWikiModalDpsPreview()" placeholder="2.0" class="w-full bg-dark-950 border border-dark-border rounded-xl px-3 py-2 text-white font-mono font-bold outline-none">
+                    <label class="text-slate-400 block mb-1">Дальность (Radius):</label>
+                    <input type="number" step="0.5" id="wikiLvlRangeInput" placeholder="15.0" class="w-full bg-dark-950 border border-dark-border rounded-xl px-3 py-2 text-white font-mono font-bold outline-none">
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-2">
+            <!-- Поле для фермы -->
+            <div id="wikiFarmFieldsGroup" class="hidden">
+                <label class="text-amber-400 block mb-1 font-bold">Доход за волну (Money Per Wave, $):</label>
+                <input type="number" id="wikiLvlFarmIncomeInput" placeholder="250" class="w-full bg-dark-950 border border-amber-500/40 rounded-xl px-3 py-2 text-white font-mono font-bold outline-none">
+            </div>
+
+            <!-- Автоматический расчет DPS и Цены продажи (25%) -->
+            <div class="grid grid-cols-2 gap-2 p-2.5 bg-dark-950 rounded-xl border border-dark-border">
                 <div>
-                    <label class="text-slate-400 block mb-1">Дальность (ДАЛЬНОСТЬ):</label>
-                    <input type="number" step="0.5" id="wikiLvlRangeInput" placeholder="11.5" class="w-full bg-dark-950 border border-dark-border rounded-xl px-3 py-2 text-white font-mono font-bold outline-none">
+                    <span class="text-[10px] text-slate-400 uppercase font-bold block">Расчетный DPS:</span>
+                    <span id="wikiLvlDpsPreview" class="text-sm font-mono font-black text-emerald-400">0 DPS</span>
                 </div>
-                <div class="bg-dark-950 p-2 rounded-xl border border-emerald-500/30 flex flex-col justify-center">
-                    <span class="text-[10px] text-slate-400 uppercase font-bold">Расчетный DPS:</span>
-                    <span id="wikiLvlDpsPreview" class="text-sm font-mono font-black text-emerald-400">4.00 DPS</span>
+                <div>
+                    <span class="text-[10px] text-slate-400 uppercase font-bold block">Цена продажи:</span>
+                    <span class="text-xs font-mono font-bold text-amber-400">Авто (25% от общей)</span>
                 </div>
             </div>
         </div>
 
         <div class="pt-2 flex justify-end gap-2 border-t border-dark-border">
             <button onclick="closeWikiLevelModal()" class="px-3 py-2 bg-dark-950 text-slate-400 text-xs font-bold rounded-xl" data-i18n="btn_cancel">Отмена</button>
-            <button onclick="saveWikiLevelFromModal()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-md" data-i18n="btn_save">Сохранить уровень</button>
+            <button onclick="saveWikiLevelFromModal()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-md cursor-pointer" data-i18n="btn_save">Сохранить уровень</button>
         </div>
     </div>
 </div>
@@ -1701,10 +1756,10 @@
         </div>
 
         <div class="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-dark-border">
-            <button onclick="copyPreviewImage()" class="px-3 py-2 bg-dark-950 hover:bg-dark-850 border border-dark-border text-slate-300 text-xs font-bold rounded-xl transition">
+            <button onclick="copyPreviewImage()" class="px-3 py-2 bg-dark-950 hover:bg-dark-850 border border-dark-border text-slate-300 text-xs font-bold rounded-xl transition cursor-pointer">
                 📋 В буфер
             </button>
-            <button onclick="downloadPreviewImage()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition shadow-md shadow-blue-500/20">
+            <button onclick="downloadPreviewImage()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition shadow-md shadow-blue-500/20 cursor-pointer">
                 💾 Скачать (PNG)
             </button>
         </div>
@@ -1726,7 +1781,7 @@
                class="w-full bg-dark-950 border border-dark-border focus:border-blue-500 rounded-xl px-3 py-2.5 text-xs text-white outline-none">
         <div class="flex justify-end gap-2">
             <button onclick="closeAdminPasswordModal()" class="px-3 py-2 bg-dark-950 text-slate-400 text-xs font-bold rounded-xl" data-i18n="btn_cancel">Отмена</button>
-            <button onclick="submitAdminPassword()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-sm">Войти</button>
+            <button onclick="submitAdminPassword()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-sm cursor-pointer">Войти</button>
         </div>
     </div>
 </div>
@@ -1738,7 +1793,7 @@
         <p id="confirmActionMessage" class="text-xs text-slate-300">Вы уверены?</p>
         <div class="flex justify-end gap-2 pt-2 border-t border-dark-border">
             <button onclick="resolveCustomConfirm(false)" class="px-3 py-2 bg-dark-950 text-slate-400 text-xs font-bold rounded-xl" data-i18n="btn_cancel">Отмена</button>
-            <button onclick="resolveCustomConfirm(true)" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl shadow-sm">Да, продолжить</button>
+            <button onclick="resolveCustomConfirm(true)" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl shadow-sm cursor-pointer">Да, продолжить</button>
         </div>
     </div>
 </div>
@@ -1768,17 +1823,16 @@
             </div>
         </div>
         <div class="pt-2 flex flex-col gap-2 border-t border-dark-border">
-            <button onclick="pullDataFromCloudManual()" class="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition flex items-center justify-center gap-2">
+            <button onclick="pullDataFromCloudManual()" class="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition flex items-center justify-center gap-2 cursor-pointer">
                 <span>📥</span> <span>Загрузить актуальную базу из облака</span>
             </button>
-            <button onclick="forceSyncToCloud(true)" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition flex items-center justify-center gap-2">
+            <button onclick="forceSyncToCloud(true)" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition flex items-center justify-center gap-2 cursor-pointer">
                 <span>🚀</span> <span>Отправить данные с этого устройства в облако</span>
             </button>
         </div>
     </div>
 </div>
 
-<!-- Контейнер всплывающих подсказок (Toasts) -->
 <div id="toastContainer" class="fixed bottom-16 md:bottom-6 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
 <script type="module">
@@ -1786,84 +1840,109 @@
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc, onSnapshot, getDocs, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // Распорядок редкостей по требованию пользователя:
-    // Crate: 10, Exclusive: 7, Mythic: 6, Legendary: 5, Epic: 4, Rare: 3, Uncommon: 2, Basic: 1
+    // Вес редкостей: от Basic (1) до Crate (10)
     const RARITY_WEIGHTS = {
-        CRATE: 10,
-        EXCLUSIVE: 7,
-        MYTHIC: 6,
-        LEGENDARY: 5,
-        EPIC: 4,
-        RARE: 3,
+        BASIC: 1,
         UNCOMMON: 2,
-        BASIC: 1
+        RARE: 3,
+        EPIC: 4,
+        LEGENDARY: 5,
+        MYTHIC: 6,
+        EXCLUSIVE: 7,
+        GAMEPASS: 9,
+        CRATE: 10
     };
 
     const defaultCatalog = [
-        { id: 1, name: "Speakerman", rarity: "BASIC", category: "combat", value: 50, gameValue: 50, isValNA: false, demand: 3, isDemNA: false, trend: "stable", limit: "—", summon: "—", pools: "Basic", crates: "Summon", img: "https://placehold.co/180x180/0d172a/94a3b8?text=Speakerman" },
-        { id: 2, name: "Camerawoman", rarity: "BASIC", category: "combat", value: 60, gameValue: 60, isValNA: false, demand: 3, isDemNA: false, trend: "stable", limit: "—", summon: "—", pools: "Basic", crates: "Summon", img: "https://placehold.co/180x180/0d172a/94a3b8?text=Camerawoman" },
-        { id: 3, name: "Cameraman", rarity: "UNCOMMON", category: "combat", value: 120, gameValue: 120, isValNA: false, demand: 4, isDemNA: false, trend: "stable", limit: "—", summon: "—", pools: "Basic Summon", crates: "Summon", img: "https://placehold.co/180x180/061a14/22c55e?text=Cameraman" },
-        { id: 4, name: "Car Speakerman", rarity: "UNCOMMON", category: "combat", value: 350, gameValue: 350, isValNA: false, demand: 4, isDemNA: false, trend: "stable", limit: "—", summon: "—", pools: "Basic Summon", crates: "Summon", img: "https://placehold.co/180x180/061a14/22c55e?text=Car+Speaker" },
-        { id: 5, name: "TV Man", rarity: "RARE", category: "combat", value: 800, gameValue: 800, isValNA: false, demand: 5, isDemNA: false, trend: "rising", limit: "—", summon: "—", pools: "Rare Summon", crates: "Summon", img: "https://placehold.co/180x180/081e28/38bdf8?text=TV+Man" },
-        { id: 6, name: "Big Speakerman", rarity: "RARE", category: "combat", value: 950, gameValue: 950, isValNA: false, demand: 5, isDemNA: false, trend: "rising", limit: "—", summon: "—", pools: "Rare Summon", crates: "Summon", img: "https://placehold.co/180x180/081e28/38bdf8?text=Big+Speaker" },
-        { id: 7, name: "Big Cameraman", rarity: "EPIC", category: "combat", value: 2500, gameValue: 2500, isValNA: false, demand: 6, isDemNA: false, trend: "stable", limit: "—", summon: "—", pools: "Epic Summon", crates: "Army Crate", img: "https://placehold.co/180x180/1a0826/a855f7?text=Big+Cameraman" },
-        { id: 8, name: "Ninja Cameraman", rarity: "EPIC", category: "combat", value: 3800, gameValue: 3800, isValNA: false, demand: 7, isDemNA: false, trend: "rising", limit: "—", summon: "—", pools: "Epic Summon", crates: "Army Crate", img: "https://placehold.co/180x180/1a0826/a855f7?text=Ninja+Cam" },
-        { id: 9, name: "Titan Cameraman", rarity: "LEGENDARY", category: "titans", value: 12000, gameValue: 12000, isValNA: false, demand: 8, isDemNA: false, trend: "rising", limit: "—", summon: "—", pools: "Mythic Summon", crates: "Titan Crate", img: "https://placehold.co/180x180/261805/f59e0b?text=Titan+Cam" },
-        { id: 10, name: "Titan Speakerman", rarity: "LEGENDARY", category: "titans", value: 14000, gameValue: 14000, isValNA: false, demand: 8, isDemNA: false, trend: "rising", limit: "—", summon: "—", pools: "Titan Crate", crates: "Titan Crate", img: "https://placehold.co/180x180/261805/f59e0b?text=Titan+Speaker" },
-        { id: 11, name: "Upgraded Titan Cinemaman", rarity: "MYTHIC", category: "titans", value: 28000, gameValue: 28000, isValNA: false, demand: 9, isDemNA: false, trend: "hyped", limit: "—", summon: "—", pools: "Exclusive", crates: "Titan Crate", img: "https://placehold.co/180x180/26070a/ef4444?text=Titan+Cinemaman" },
-        { id: 12, name: "Upgraded Titan", rarity: "EXCLUSIVE", category: "titans", value: 45000, gameValue: 45000, isValNA: false, demand: 10, isDemNA: false, trend: "hyped", limit: "—", summon: "—", pools: "Special", crates: "Exclusive Crate", img: "https://placehold.co/180x180/28081a/ec4899?text=Upgraded+Titan" },
-        { id: 13, name: "War Crate [Item]", rarity: "CRATE", category: "crates", value: 5000, gameValue: 5000, isValNA: false, demand: 8, isDemNA: false, trend: "stable", limit: "—", summon: "—", pools: "Crates", crates: "War", img: "https://placehold.co/180x180/261304/f97316?text=War+Crate" }
+        { id: 1, name: "Speakerman", rarity: "BASIC", category: "combat", value: 50, gameValue: 50, isValNA: false, demand: 3, isDemNA: false, trend: "stable", limit: "—", summon: "—", img: "https://placehold.co/180x180/0d172a/94a3b8?text=Speakerman" },
+        { id: 2, name: "Camerawoman", rarity: "BASIC", category: "combat", value: 60, gameValue: 60, isValNA: false, demand: 3, isDemNA: false, trend: "stable", limit: "—", summon: "—", img: "https://placehold.co/180x180/0d172a/94a3b8?text=Camerawoman" },
+        { id: 3, name: "Cameraman", rarity: "UNCOMMON", category: "combat", value: 120, gameValue: 120, isValNA: false, demand: 4, isDemNA: false, trend: "stable", limit: "—", summon: "—", img: "https://placehold.co/180x180/061a14/22c55e?text=Cameraman" },
+        { id: 4, name: "Car Speakerman", rarity: "UNCOMMON", category: "combat", value: 350, gameValue: 350, isValNA: false, demand: 4, isDemNA: false, trend: "stable", limit: "—", summon: "—", img: "https://placehold.co/180x180/061a14/22c55e?text=Car+Speaker" },
+        { id: 5, name: "TV Man", rarity: "RARE", category: "combat", value: 800, gameValue: 800, isValNA: false, demand: 5, isDemNA: false, trend: "rising", limit: "—", summon: "—", img: "https://placehold.co/180x180/081e28/38bdf8?text=TV+Man" },
+        { id: 6, name: "Big Speakerman", rarity: "RARE", category: "combat", value: 950, gameValue: 950, isValNA: false, demand: 5, isDemNA: false, trend: "rising", limit: "—", summon: "—", img: "https://placehold.co/180x180/081e28/38bdf8?text=Big+Speaker" },
+        { id: 7, name: "Big Cameraman", rarity: "EPIC", category: "combat", value: 2500, gameValue: 2500, isValNA: false, demand: 6, isDemNA: false, trend: "stable", limit: "—", summon: "—", img: "https://placehold.co/180x180/1a0826/a855f7?text=Big+Cameraman" },
+        { id: 8, name: "Ninja Cameraman", rarity: "EPIC", category: "combat", value: 3800, gameValue: 3800, isValNA: false, demand: 7, isDemNA: false, trend: "rising", limit: "—", summon: "—", img: "https://placehold.co/180x180/1a0826/a855f7?text=Ninja+Cam" },
+        { id: 9, name: "Titan Cameraman", rarity: "LEGENDARY", category: "titans", value: 12000, gameValue: 12000, isValNA: false, demand: 8, isDemNA: false, trend: "rising", limit: "—", summon: "—", img: "https://placehold.co/180x180/261805/f59e0b?text=Titan+Cam" },
+        { id: 10, name: "Titan Speakerman", rarity: "LEGENDARY", category: "titans", value: 14000, gameValue: 14000, isValNA: false, demand: 8, isDemNA: false, trend: "rising", limit: "—", summon: "—", img: "https://placehold.co/180x180/261805/f59e0b?text=Titan+Speaker" },
+        { id: 11, name: "Upgraded Titan Cinemaman", rarity: "MYTHIC", category: "titans", value: 28000, gameValue: 28000, isValNA: false, demand: 9, isDemNA: false, trend: "hyped", limit: "—", summon: "—", img: "https://placehold.co/180x180/26070a/ef4444?text=Titan+Cinemaman" },
+        { id: 12, name: "Upgraded Titan", rarity: "EXCLUSIVE", category: "titans", value: 45000, gameValue: 45000, isValNA: false, demand: 10, isDemNA: false, trend: "hyped", limit: "—", summon: "—", img: "https://placehold.co/180x180/28081a/ec4899?text=Upgraded+Titan" },
+        { id: 14, name: "Lucky Gamepass", rarity: "GAMEPASS", category: "combat", value: 35000, gameValue: 35000, isValNA: false, demand: 8, isDemNA: false, trend: "stable", limit: "—", summon: "—", img: "https://placehold.co/180x180/083344/06b6d4?text=Gamepass" },
+        { 
+            id: 13, 
+            name: "Scientist Crate", 
+            rarity: "CRATE", 
+            category: "crates", 
+            value: 6500, 
+            gameValue: 6500, 
+            isValNA: false, 
+            demand: 9, 
+            isDemNA: false, 
+            trend: "hyped", 
+            limit: "—", 
+            summon: "—", 
+            img: "https://placehold.co/180x180/261304/f97316?text=Scientist+Crate",
+            crateDrops: [
+                { unitId: 8, chance: 70 }, // Ninja Cameraman
+                { unitId: 7, chance: 29 }, // Big Cameraman
+                { unitId: 11, chance: 1 }  // Upgraded Titan Cinemaman
+            ]
+        }
     ];
 
     const defaultCrates = [
         {
             id: "crate_hub_summon",
-            name: "Summon [FOR HUB GAME]",
+            name: "Summon [FOR HUB GAME+]",
             mode: "paid",
-            costValue: 300,
+            costValue: 250,
             description: "Классический призыв персонажей для хаба",
             img: "https://placehold.co/180x180/131f37/38bdf8?text=Summon+Hub",
             items: [
-                { unitId: 1, chance: 30 },
-                { unitId: 2, chance: 30 },
-                { unitId: 3, chance: 20 },
-                { unitId: 4, chance: 15 },
-                { unitId: 6, chance: 5 }
-            ]
-        },
-        {
-            id: "crate_titan",
-            name: "Titan Crate",
-            mode: "paid",
-            costValue: 2500,
-            description: "Легендарный ящик с гигантскими Титанами",
-            img: "https://placehold.co/180x180/2e1d05/f59e0b?text=Titan+Crate",
-            items: [
-                { unitId: 9, chance: 45 },
-                { unitId: 10, chance: 35 },
-                { unitId: 11, chance: 18 },
-                { unitId: 12, chance: 2 }
+                { unitId: 3, chance: 25 },
+                { unitId: 4, chance: 25 },
+                { unitId: 5, chance: 15 },
+                { unitId: 6, chance: 15 },
+                { unitId: 7, chance: 8 },
+                { unitId: 8, chance: 8 },
+                { unitId: 9, chance: 1 },
+                { unitId: 10, chance: 1 },
+                { unitId: 11, chance: 1 },
+                { unitId: 13, chance: 1 }
             ]
         },
         {
             id: "crate_free_demo",
-            name: "Free Lucky Crate",
+            name: "Summon [FREE]",
             mode: "free",
             costValue: 0,
-            description: "Бесплатный демо-кейс для проверки удачи",
-            img: "https://placehold.co/180x180/0c2317/10b981?text=Free+Crate",
+            description: "Бесплатный демо-призыв для проверки удачи",
+            img: "https://placehold.co/180x180/0c2317/10b981?text=Free+Summon",
             items: [
                 { unitId: 1, chance: 50 },
                 { unitId: 2, chance: 35 },
-                { unitId: 4, chance: 15 }
+                { unitId: 3, chance: 15 }
             ]
         }
     ];
 
     const initialDefaultWiki = {
-        1: { levels: [{ level: 1, cost: 50, damage: 15, cooldown: 1.5, range: 10.0 }, { level: 2, cost: 120, damage: 35, cooldown: 1.4, range: 12.0 }] },
-        4: { levels: [{ level: 1, cost: 100, damage: 30, cooldown: 1.4, range: 12.0 }, { level: 2, cost: 250, damage: 70, cooldown: 1.3, range: 14.0 }] },
-        11: { levels: [{ level: 1, cost: 2000, damage: 850, cooldown: 2.2, range: 26.0 }, { level: 2, cost: 4500, damage: 2100, cooldown: 1.9, range: 30.0 }] }
+        1: { 
+            levels: [
+                { level: 1, cost: 80, damage: 50, cooldown: 3.0, range: 8.0, attackType: "Single" },
+                { level: 2, cost: 150, damage: 80, cooldown: 2.0, range: 10.0, attackType: "Single" },
+                { level: 3, cost: 300, damage: 200, cooldown: 1.0, range: 12.0, attackType: "Single" }
+            ] 
+        },
+        5: {
+            levels: [
+                { level: 1, cost: 2000, damage: 2000, cooldown: 2.0, range: 15.0, attackType: "Single" },
+                { level: 2, cost: 2000, damage: 3000, cooldown: 1.0, range: 20.0, attackType: "Single" },
+                { level: 3, cost: 4000, damage: 2000, cooldown: 1.0, range: 20.0, attackType: "Aoe" },
+                { level: 4, cost: 5000, damage: 2000, cooldown: 0.5, range: 25.0, attackType: "Aoe" },
+                { level: 5, cost: 8000, damage: 3000, cooldown: 0.4, range: 30.0, attackType: "Aoe" },
+                { level: 6, cost: 15000, damage: 3000, cooldown: 0.2, range: 40.0, attackType: "Aoe" }
+            ]
+        }
     };
 
     let catalogItems = [];
@@ -1871,7 +1950,6 @@
         const saved = localStorage.getItem('ctd_catalog_data');
         catalogItems = saved ? JSON.parse(saved) : defaultCatalog;
         catalogItems.forEach(u => {
-            // Замена старого названия COMMON на BASIC
             if (u.rarity === 'COMMON') u.rarity = 'BASIC';
             if (u.gameValue === undefined || u.gameValue === null) u.gameValue = u.value || 0;
             if (u.limit === undefined) u.limit = "—";
@@ -1961,7 +2039,8 @@
         { unitId: 4, qty: 5 },
         { unitId: 11, qty: 2 },
         { unitId: 1, qty: 3 },
-        { unitId: 6, qty: 2 }
+        { unitId: 6, qty: 2 },
+        { unitId: 13, qty: 2 } // 2 шт. Scientist Crate в инвентаре для тестирования!
     ];
     try {
         const savedInv = localStorage.getItem('ctd_inventory_data');
@@ -1987,13 +2066,18 @@
     let isRouletteSpinning = false;
     let selectedWikiUnitId = catalogItems[0]?.id || 1;
     let activePickerMode = 'trade';
+    let currentCratesSubTab = 'hub'; // 'hub' или 'inventory'
 
-    let liveTickerEvents = [];
+    let liveTickerEvents = [
+        { user: "Malez", unitName: "Scientist Crate", unitImg: "https://placehold.co/180x180/261304/f97316?text=Scientist+Crate", rarity: "CRATE", source: "Summon", time: Date.now() - 5000 },
+        { user: "TitanPro", unitName: "Upgraded Titan Cinemaman", unitImg: "https://placehold.co/180x180/26070a/ef4444?text=Titan+Cinemaman", rarity: "MYTHIC", source: "Upgrader", time: Date.now() - 10000 }
+    ];
     try {
         const savedEvents = localStorage.getItem('ctd_real_drops_cache');
         if (savedEvents) liveTickerEvents = JSON.parse(savedEvents);
     } catch(e) {}
 
+    // Состояние апгрейдера: теперь вращается стрелка (arrowAngle)!
     let upgraderState = {
         sourceType: 'unit',
         sourceUnit: null,
@@ -2002,7 +2086,7 @@
         targetUnit: null,
         winChance: 0,
         isSpinning: false,
-        wheelAngle: 0,
+        arrowAngle: -Math.PI / 2, // Начинает ровно сверху (12 часов)
         bottomTab: 'inventory'
     };
 
@@ -2120,13 +2204,13 @@
     }
     window.initFirebase = initFirebase;
 
-    // Сохранение данных игрока
     window.saveUserData = function() {
         try { 
             localStorage.setItem('ctd_inventory_data', JSON.stringify(userInventory)); 
             localStorage.setItem('ctd_user_val_balance', userValBalance.toString());
         } catch(e) {}
         registerPlayerInCloud();
+        updateBalanceDisplays();
     };
 
     async function registerPlayerInCloud() {
@@ -2162,7 +2246,7 @@
                     const p = docSnap.data();
                     playersHtml += `
                         <tr class="hover:bg-dark-900/60 transition">
-                            <td class="p-2.5 font-bold text-white">${p.nick}</td>
+                            <td class="p-2.5 font-bold text-white">${p.nick || 'Trader'}</td>
                             <td class="p-2.5 text-blue-400 font-bold">${p.tgUsername || 'Не указан'}</td>
                             <td class="p-2.5 text-emerald-400 font-bold">${Number(p.balance || 0).toLocaleString()} Val</td>
                             <td class="p-2.5 text-slate-300">${p.inventoryCount || 0} шт.</td>
@@ -2211,7 +2295,8 @@
 
     window.renderAdminEditPlayerInventory = function() {
         const grid = document.getElementById('adminEditPlayerInventoryGrid');
-        if (currentEditingPlayer.inventory.length === 0) {
+        if (!grid) return;
+        if (!currentEditingPlayer.inventory || currentEditingPlayer.inventory.length === 0) {
             grid.innerHTML = `<div class="text-xs text-slate-500 text-center py-4 bg-dark-950 rounded-xl border border-dark-border">Инвентарь пуст</div>`;
             return;
         }
@@ -2238,10 +2323,13 @@
 
     window.adminUpdatePlayerInvQty = function(idx, val) {
         const qty = parseInt(val, 10);
-        if(qty >= 0) currentEditingPlayer.inventory[idx].qty = qty;
+        if(qty >= 0 && currentEditingPlayer && currentEditingPlayer.inventory[idx]) {
+            currentEditingPlayer.inventory[idx].qty = qty;
+        }
     };
 
     window.adminRemovePlayerInvItem = function(idx) {
+        if (!currentEditingPlayer) return;
         currentEditingPlayer.inventory.splice(idx, 1);
         renderAdminEditPlayerInventory();
     };
@@ -2251,14 +2339,14 @@
         if(!unitIdStr) return;
         const id = parseInt(unitIdStr, 10);
         const unit = catalogItems.find(u => u.id === id);
-        if(unit) {
+        if(unit && currentEditingPlayer) {
             const existing = currentEditingPlayer.inventory.find(i => i.unitId === id);
             if(existing) existing.qty++;
             else currentEditingPlayer.inventory.push({unitId: id, qty: 1});
             renderAdminEditPlayerInventory();
             showToast(`Добавлен: ${unit.name}`, 'success');
         } else {
-            showToast("Персонаж с таким ID не найден в каталоге", "warn");
+            showToast("Персонаж с таким ID не найден", "warn");
         }
     };
 
@@ -2287,7 +2375,7 @@
                 showToast("Ошибка сохранения в базу: " + e.message, "error");
             }
         } else {
-            showToast("Сохранено локально (нет связи с облаком)", "info");
+            showToast("Сохранено локально", "info");
         }
 
         closeAdminEditPlayer();
@@ -2308,7 +2396,7 @@
         const btnText = document.getElementById('bailoutBtnText');
         if (btnText) btnText.innerText = `+${adminSettings.bonusAmount} Val`;
 
-        showToast("Параметры экономики успешно сохранены!", "success");
+        showToast("Параметры экономики сохранены!", "success");
         forceSyncToCloud(false);
     };
 
@@ -2321,7 +2409,7 @@
         userValBalance = amount;
         saveUserData();
         updateBalanceDisplays();
-        showToast(`Баланс игрока ${currentUserNick} установлен на ${userValBalance.toLocaleString()} Val`, "success");
+        showToast(`Баланс игрока ${currentUserNick} изменен: ${userValBalance.toLocaleString()} Val`, "success");
         valInput.value = "";
     };
 
@@ -2329,7 +2417,7 @@
         userValBalance += amount;
         saveUserData();
         updateBalanceDisplays();
-        showToast(`Начислено +${amount.toLocaleString()} Val к балансу`, "success");
+        showToast(`Начислено +${amount.toLocaleString()} Val`, "success");
     };
 
     window.resetPlayerBalanceFromAdmin = function() {
@@ -2338,7 +2426,7 @@
                 userValBalance = 0;
                 saveUserData();
                 updateBalanceDisplays();
-                showToast("Баланс игрока успешно обнулен", "info");
+                showToast("Баланс обнулен", "info");
             }
         });
     };
@@ -2400,18 +2488,21 @@
         switchMainTab(tabName);
     };
 
+    // Нажатие на логотип: сразу на главную + отсчет 5 кликов для админки
     window.handleLogoClick = function() {
+        switchMainTab('home');
+
         secretClicksCounter++;
         if (secretClicksTimer) clearTimeout(secretClicksTimer);
         secretClicksTimer = setTimeout(() => {
             secretClicksCounter = 0;
-        }, 2500);
+        }, 2200);
 
         if (secretClicksCounter >= 5) {
             secretClicksCounter = 0;
             if (isMasterAdmin) {
                 switchMainTab('admin');
-                showToast("Вход в панель администратора выполнен!", "success");
+                showToast("Режим администратора активирован 👑", "success");
             } else {
                 openAdminPasswordModal();
             }
@@ -2442,7 +2533,7 @@
             closeAdminPasswordModal();
             updateAdminUIState();
             switchMainTab('admin');
-            showToast("Добро пожаловать в панель Главного Администратора!", "success");
+            showToast("Вход в панель администратора выполнен!", "success");
         } else {
             showToast("Неверный пароль администратора", "error");
         }
@@ -2497,7 +2588,7 @@
         if (targetNick) targetNick.innerText = currentUserNick;
         registerPlayerInCloud();
         closeUserAuthModal();
-        showToast(`Профиль обновлен: ${currentUserNick}`, "success");
+        showToast(`Профиль сохранен: ${currentUserNick}`, "success");
     };
 
     window.showCloudDiagnosticsModal = function() {
@@ -2640,7 +2731,6 @@
             crate_won_banner_label: "Поздравляем! Вы получили:",
             crate_auto_added_to_inv: "Автоматически добавлено в коллекцию 🎒",
             wiki_title: "Боевая Википедия (Характеристики и Прокачка)",
-            wiki_sub: "Уровни прокачки, урон, радиус, кулдаун, дельты и авто-расчет DPS",
             wiki_search_placeholder: "Поиск персонажа в Вики...",
             wiki_choose_unit: "Выберите персонажа для просмотра:",
             tier_title: "Рейтинговый Тир-Лист персонажей",
@@ -2771,7 +2861,6 @@
             crate_won_banner_label: "Congratulations! You got:",
             crate_auto_added_to_inv: "Added to inventory automatically 🎒",
             wiki_title: "Combat Wiki (Stats & Upgrades)",
-            wiki_sub: "Upgrade tiers, damage, range, cooldown and DPS calc",
             wiki_search_placeholder: "Search unit in wiki...",
             wiki_choose_unit: "Select a unit to view:",
             tier_title: "Character Tier List",
@@ -3003,7 +3092,7 @@
                     </div>
 
                     <div class="pt-2 flex items-center gap-1.5">
-                        <button onclick="addUnitToTradeDirect(${u.id})" class="flex-1 py-1.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 font-bold text-[10px] rounded-lg border border-blue-500/30 transition text-center" title="Добавить в трейд калькулятор">
+                        <button onclick="addUnitToTradeDirect(${u.id})" class="flex-1 py-1.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 font-bold text-[10px] rounded-lg border border-blue-500/30 transition text-center" title="Добавить в трейд">
                             + В трейд
                         </button>
                         <button onclick="addUnitToUpgraderDirect(${u.id})" class="flex-1 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-[10px] rounded-lg border border-amber-500/30 transition text-center" title="Выбрать целью в апгрейдере">
@@ -3013,6 +3102,58 @@
                 </div>
             `;
         }).join('');
+    };
+
+    window.toggleCrateDropsSectionInUnitEditor = function(rarity) {
+        const box = document.getElementById('unitCrateDropsConfigBox');
+        if (!box) return;
+        if (rarity === 'CRATE') {
+            box.classList.remove('hidden');
+            renderUnitCrateDropsEditorList();
+        } else {
+            box.classList.add('hidden');
+        }
+    };
+
+    function renderUnitCrateDropsEditorList(existingDrops = []) {
+        const listEl = document.getElementById('unitCrateDropsList');
+        if (!listEl) return;
+
+        const mapChances = {};
+        if (Array.isArray(existingDrops)) {
+            existingDrops.forEach(d => mapChances[d.unitId] = d.chance);
+        }
+
+        const eligibleUnits = catalogItems.filter(u => u.rarity !== 'CRATE');
+
+        listEl.innerHTML = eligibleUnits.map(u => `
+            <div class="flex items-center justify-between gap-2 p-1.5 bg-dark-900 rounded-lg border border-dark-border">
+                <div class="flex items-center gap-2 truncate">
+                    <img src="${u.img}" class="w-6 h-6 object-contain">
+                    <span class="text-xs text-white truncate">${u.name}</span>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                    <input type="number" min="0" max="100" data-unit-drop-id="${u.id}" oninput="updateUnitCrateDropsSum()" 
+                           value="${mapChances[u.id] || 0}" 
+                           class="unit-crate-drop-input w-14 bg-dark-950 border border-dark-border text-white text-xs font-mono font-bold px-2 py-0.5 rounded outline-none text-right">
+                    <span class="text-xs text-slate-400">%</span>
+                </div>
+            </div>
+        `).join('');
+
+        updateUnitCrateDropsSum();
+    }
+
+    window.updateUnitCrateDropsSum = function() {
+        let sum = 0;
+        document.querySelectorAll('.unit-crate-drop-input').forEach(inp => {
+            sum += parseFloat(inp.value) || 0;
+        });
+        const badge = document.getElementById('unitCrateTotalChanceBadge');
+        if (badge) {
+            badge.innerText = `Сумма: ${sum.toFixed(1)}%`;
+            badge.className = `text-[10px] font-mono font-bold ${Math.abs(sum - 100) < 0.1 ? 'text-emerald-400' : 'text-amber-400'}`;
+        }
     };
 
     window.openItemModal = function(editId = null) {
@@ -3037,6 +3178,11 @@
             document.getElementById('itemLimitInput').value = unit.limit || '—';
             document.getElementById('itemSummonInput').value = unit.summon || '—';
             document.getElementById('itemImgInput').value = unit.img || '';
+
+            toggleCrateDropsSectionInUnitEditor(unit.rarity);
+            if (unit.rarity === 'CRATE') {
+                renderUnitCrateDropsEditorList(unit.crateDrops || []);
+            }
         } else {
             if (titleEl) titleEl.innerText = "Создать нового юнита";
             if (idInput) idInput.value = "";
@@ -3052,6 +3198,8 @@
             document.getElementById('itemLimitInput').value = "—";
             document.getElementById('itemSummonInput').value = "—";
             document.getElementById('itemImgInput').value = "";
+
+            toggleCrateDropsSectionInUnitEditor("BASIC");
         }
 
         uploadedBase64Image = "";
@@ -3122,16 +3270,27 @@
         const summon = document.getElementById('itemSummonInput').value.trim() || '—';
         const img = uploadedBase64Image || document.getElementById('itemImgInput').value.trim() || 'https://placehold.co/180x180/0f172a/38bdf8?text=' + encodeURIComponent(name);
 
+        let crateDrops = [];
+        if (rarity === 'CRATE') {
+            document.querySelectorAll('.unit-crate-drop-input').forEach(inp => {
+                const chance = parseFloat(inp.value) || 0;
+                if (chance > 0) {
+                    const unitId = parseInt(inp.getAttribute('data-unit-drop-id'), 10);
+                    crateDrops.push({ unitId, chance });
+                }
+            });
+        }
+
         if (editIdStr) {
             const editId = parseInt(editIdStr, 10);
             const idx = catalogItems.findIndex(u => u.id === editId);
             if (idx !== -1) {
-                catalogItems[idx] = { ...catalogItems[idx], name, rarity, category, value, gameValue, isValNA, demand, isDemNA, trend, limit, summon, img };
+                catalogItems[idx] = { ...catalogItems[idx], name, rarity, category, value, gameValue, isValNA, demand, isDemNA, trend, limit, summon, img, crateDrops };
                 showToast(`Персонаж ${name} обновлен!`, "success");
             }
         } else {
             const newId = catalogItems.reduce((max, u) => Math.max(max, u.id), 0) + 1;
-            const newItem = { id: newId, name, rarity, category, value, gameValue, isValNA, demand, isDemNA, trend, limit, summon, img };
+            const newItem = { id: newId, name, rarity, category, value, gameValue, isValNA, demand, isDemNA, trend, limit, summon, img, crateDrops };
             catalogItems.push(newItem);
             showToast(`Персонаж ${name} добавлен в каталог!`, "success");
         }
@@ -3141,6 +3300,7 @@
         applyFilters();
         updateStats();
         renderAdminItemsTable();
+        renderCratesView();
         forceSyncToCloud(false);
     };
 
@@ -3152,8 +3312,9 @@
                 applyFilters();
                 updateStats();
                 renderAdminItemsTable();
+                renderCratesView();
                 forceSyncToCloud(false);
-                showToast("Персонаж удален из каталога", "info");
+                showToast("Персонаж удален", "info");
             }
         });
     };
@@ -3164,70 +3325,99 @@
         const ctx = canvas.getContext('2d');
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
-        const radius = cx - 12;
+        const radius = cx - 14;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        const winChance = Math.min(100, Math.max(0, upgraderState.winChance)) / 100;
-        const winAngle = winChance * 2 * Math.PI;
+        const winChanceRatio = Math.min(100, Math.max(0, upgraderState.winChance)) / 100;
+        const winAngle = winChanceRatio * 2 * Math.PI;
+        const topAngle = -Math.PI / 2; // Начало сектора шанса ровно сверху (12 часов)
 
+        // Нормализованный угол стрелки относительно 12 часов [0 .. 2PI)
+        let normalizedOffset = ((upgraderState.arrowAngle - topAngle) % (2 * Math.PI) + (2 * Math.PI)) % (2 * Math.PI);
+
+        // Стрелка находится над сектором победы
+        const isArrowTouchingWin = winAngle > 0 && normalizedOffset <= winAngle;
+
+        // 1. Отрисовка сектора победы (Win slice) от 12 часов
         ctx.save();
-        ctx.translate(cx, cy);
-        ctx.rotate(upgraderState.wheelAngle);
-
-        // Win slice (Green gradient)
         ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.arc(0, 0, radius, 0, winAngle);
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, radius, topAngle, topAngle + winAngle);
         ctx.closePath();
-        const winGrad = ctx.createRadialGradient(0, 0, 10, 0, 0, radius);
-        winGrad.addColorStop(0, '#10b981');
-        winGrad.addColorStop(1, '#047857');
-        ctx.fillStyle = winGrad;
-        ctx.fill();
 
-        // Fail slice (Dark slate)
+        if (isArrowTouchingWin) {
+            ctx.shadowColor = '#10b981';
+            ctx.shadowBlur = 22;
+            ctx.fillStyle = '#34d399';
+        } else {
+            const winGrad = ctx.createRadialGradient(cx, cy, 10, cx, cy, radius);
+            winGrad.addColorStop(0, '#10b981');
+            winGrad.addColorStop(1, '#047857');
+            ctx.fillStyle = winGrad;
+        }
+        ctx.fill();
+        ctx.restore();
+
+        // 2. Сектор проигрыша (Fail slice)
         if (winAngle < 2 * Math.PI) {
             ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.arc(0, 0, radius, winAngle, 2 * Math.PI);
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, radius, topAngle + winAngle, topAngle + 2 * Math.PI);
             ctx.closePath();
-            const failGrad = ctx.createRadialGradient(0, 0, 10, 0, 0, radius);
+            const failGrad = ctx.createRadialGradient(cx, cy, 10, cx, cy, radius);
             failGrad.addColorStop(0, '#1e293b');
-            failGrad.addColorStop(1, '#0f172a');
+            failGrad.addColorStop(1, '#090e18');
             ctx.fillStyle = failGrad;
             ctx.fill();
         }
 
-        // Wheel outer rim
+        // Внешнее кольцо колеса с динамической подсветкой
         ctx.beginPath();
-        ctx.arc(0, 0, radius, 0, 2 * Math.PI);
-        ctx.lineWidth = 6;
-        ctx.strokeStyle = '#334155';
+        ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = isArrowTouchingWin ? '#10b981' : '#334155';
         ctx.stroke();
 
-        ctx.restore();
-
-        // Center hub circle
+        // Центральный круг
         ctx.beginPath();
-        ctx.arc(cx, cy, radius * 0.62, 0, 2 * Math.PI);
+        ctx.arc(cx, cy, radius * 0.64, 0, 2 * Math.PI);
         ctx.fillStyle = '#0b111e';
         ctx.fill();
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 3;
         ctx.strokeStyle = '#1e293b';
         ctx.stroke();
 
-        // Wheel needle marker at the top
+        // 3. ВРАЩАЮЩАЯСЯ ЖЕЛТАЯ СТРЕЛКА
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(upgraderState.arrowAngle);
+
+        // Линия стрелки от хаба к наконечнику
         ctx.beginPath();
-        ctx.moveTo(cx, 4);
-        ctx.lineTo(cx - 8, 20);
-        ctx.lineTo(cx + 8, 20);
+        ctx.moveTo(radius * 0.64, 0);
+        ctx.lineTo(radius - 16, 0);
+        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = '#f59e0b';
+        ctx.stroke();
+
+        // Наконечник стрелки, направленный наружу на сектор
+        ctx.beginPath();
+        ctx.moveTo(radius - 2, 0);
+        ctx.lineTo(radius - 18, -9);
+        ctx.lineTo(radius - 12, 0);
+        ctx.lineTo(radius - 18, 9);
         ctx.closePath();
+
         ctx.fillStyle = '#fbbf24';
+        ctx.shadowColor = '#f59e0b';
+        ctx.shadowBlur = 14;
         ctx.fill();
+
         ctx.strokeStyle = '#78350f';
         ctx.lineWidth = 1.5;
         ctx.stroke();
+        ctx.restore();
     }
 
     function calculateUpgraderChance() {
@@ -3240,7 +3430,6 @@
         if (sourceVal <= 0 || targetVal <= 0) {
             upgraderState.winChance = 0;
         } else {
-            // Реалистичный расчет с учетом комиссии хаба (5% house edge)
             const rawChance = (sourceVal / targetVal) * 95;
             upgraderState.winChance = Math.min(95, Math.max(0.5, rawChance));
         }
@@ -3254,7 +3443,6 @@
         calculateUpgraderChance();
         updateBalanceDisplays();
 
-        // Source slot UI
         const srcImg = document.getElementById('upgSourceImg');
         const srcName = document.getElementById('upgSourceName');
         const srcVal = document.getElementById('upgSourceValue');
@@ -3270,7 +3458,7 @@
             if (qtyDisp) qtyDisp.innerText = `x${upgraderState.sourceQty}`;
         } else if (upgraderState.sourceType === 'custom' && upgraderState.sourceVal > 0) {
             if (srcImg) srcImg.src = "https://placehold.co/120x120/0f172a/10b981?text=Val+Bet";
-            if (srcName) srcName.innerText = "Ставка монетами Val";
+            if (srcName) srcName.innerText = "Ставка Val";
             if (srcVal) srcVal.innerText = `${upgraderState.sourceVal.toLocaleString()} Val`;
             if (qtyBox) qtyBox.classList.add('hidden');
         } else {
@@ -3280,7 +3468,6 @@
             if (qtyBox) qtyBox.classList.add('hidden');
         }
 
-        // Target slot UI
         const tgtImg = document.getElementById('upgTargetImg');
         const tgtName = document.getElementById('upgTargetName');
         const tgtVal = document.getElementById('upgTargetValue');
@@ -3345,7 +3532,7 @@
             ? ((upgraderState.sourceUnit?.gameValue || 0) * upgraderState.sourceQty)
             : upgraderState.sourceVal;
 
-        if (sourceVal <= 0) return showToast("Сначала укажите ставку или юнит слева", "warn");
+        if (sourceVal <= 0) return showToast("Сначала укажите ставку слева", "warn");
         const idealTargetVal = sourceVal * mult;
         
         let closest = null, minDiff = Infinity;
@@ -3369,7 +3556,7 @@
             ? ((upgraderState.sourceUnit?.gameValue || 0) * upgraderState.sourceQty)
             : upgraderState.sourceVal;
 
-        if (sourceVal <= 0) return showToast("Сначала укажите ставку или юнит слева", "warn");
+        if (sourceVal <= 0) return showToast("Сначала укажите ставку слева", "warn");
         const targetVal = (sourceVal * 95) / targetPercent;
 
         let closest = null, minDiff = Infinity;
@@ -3427,41 +3614,68 @@
         const btn = document.getElementById('executeUpgradeBtn');
         if (btn) btn.disabled = true;
 
-        const isWin = Math.random() * 100 < upgraderState.winChance;
-        const fullSpins = 4 + Math.floor(Math.random() * 3);
-        const winAngle = (upgraderState.winChance / 100) * 2 * Math.PI;
+        const winChance = upgraderState.winChance;
+        const winAngle = (winChance / 100) * 2 * Math.PI;
+        const isWin = Math.random() * 100 < winChance;
+        const topAngle = -Math.PI / 2; // Верхняя точка колеса (12 часов)
 
-        let finalAngle = 0;
+        // Выбираем ТОЧНЫЙ целевой угол смещения от 12 часов
+        let targetOffset = 0;
         if (isWin) {
-            // Стрелка находится наверху (3*PI/2)
-            const targetSectorAngle = Math.random() * winAngle * 0.85 + (winAngle * 0.05);
-            finalAngle = (1.5 * Math.PI) - targetSectorAngle;
+            // Гарантированно внутри выигрышного сектора с безопасными отступами от краев
+            const pad = Math.min(0.08, winAngle * 0.15);
+            targetOffset = pad + Math.random() * Math.max(0.01, winAngle - 2 * pad);
         } else {
+            // Гарантированно внутри сектора проигрыша
             const failSectorSize = (2 * Math.PI) - winAngle;
-            const targetSectorAngle = winAngle + (Math.random() * failSectorSize * 0.85 + (failSectorSize * 0.05));
-            finalAngle = (1.5 * Math.PI) - targetSectorAngle;
+            const pad = Math.min(0.08, failSectorSize * 0.15);
+            targetOffset = winAngle + pad + Math.random() * Math.max(0.01, failSectorSize - 2 * pad);
         }
 
-        const totalRotation = (fullSpins * 2 * Math.PI) + finalAngle;
+        // Абсолютный целевой угол стрелки на канвасе
+        const targetCanvasAngle = topAngle + targetOffset;
+
+        // Текущий угол стрелки, приведенный к диапазону [0, 2PI)
+        const currentNorm = ((upgraderState.arrowAngle % (2 * Math.PI)) + (2 * Math.PI)) % (2 * Math.PI);
+        const targetNorm = ((targetCanvasAngle % (2 * Math.PI)) + (2 * Math.PI)) % (2 * Math.PI);
+
+        // Угловое расстояние строго вперед по часовой стрелке до targetNorm
+        let deltaForward = targetNorm - currentNorm;
+        if (deltaForward <= 0.05) {
+            deltaForward += 2 * Math.PI;
+        }
+
+        // 4-5 полных оборотов плюс точный доворот
+        const fullSpins = 4 + Math.floor(Math.random() * 2);
+        const totalRotation = (fullSpins * 2 * Math.PI) + deltaForward;
+
         const duration = 4000;
         const start = performance.now();
-        const startAngle = upgraderState.wheelAngle;
+        const startAngle = upgraderState.arrowAngle;
 
-        function animateWheel(time) {
+        function animateArrow(time) {
             const elapsed = time - start;
             const progress = Math.min(1, elapsed / duration);
             const easeOut = 1 - Math.pow(1 - progress, 3);
 
-            upgraderState.wheelAngle = startAngle + (totalRotation * easeOut);
+            upgraderState.arrowAngle = startAngle + (totalRotation * easeOut);
             drawUpgraderWheel();
 
             if (progress < 1) {
-                requestAnimationFrame(animateWheel);
+                requestAnimationFrame(animateArrow);
             } else {
                 upgraderState.isSpinning = false;
                 if (btn) btn.disabled = false;
 
-                if (isWin) {
+                // Устанавливаем точный финальный угол стрелки
+                upgraderState.arrowAngle = startAngle + totalRotation;
+                drawUpgraderWheel();
+
+                // 100% честная верификация по фактическому положению стрелки
+                const finalOffset = ((upgraderState.arrowAngle - topAngle) % (2 * Math.PI) + (2 * Math.PI)) % (2 * Math.PI);
+                const actualWin = finalOffset <= winAngle;
+
+                if (actualWin) {
                     const won = upgraderState.targetUnit;
                     const existing = userInventory.find(i => i.unitId === won.id);
                     if (existing) existing.qty++;
@@ -3472,14 +3686,15 @@
                     addDropToLiveTicker({
                         user: currentUserNick,
                         unitName: won.name,
+                        unitImg: won.img,
                         rarity: won.rarity,
                         source: 'Upgrader',
                         time: Date.now()
                     });
 
-                    showToast(`🔥 УСПЕХ! Вы выиграли ${won.name}!`, "success");
+                    openUpgraderResultModal(true, won);
                 } else {
-                    showToast("Неудача! Предмет сгорел в колесе апгрейда", "error");
+                    openUpgraderResultModal(false, upgraderState.targetUnit);
                 }
 
                 clearUpgraderSource();
@@ -3487,7 +3702,41 @@
             }
         }
 
-        requestAnimationFrame(animateWheel);
+        requestAnimationFrame(animateArrow);
+    };
+
+    window.openUpgraderResultModal = function(isWin, unit) {
+        const modal = document.getElementById('upgraderResultModal');
+        const card = document.getElementById('upgResultCard');
+        const icon = document.getElementById('upgResultIcon');
+        const title = document.getElementById('upgResultTitle');
+        const desc = document.getElementById('upgResultDesc');
+        const img = document.getElementById('upgResultImg');
+        const name = document.getElementById('upgResultUnitName');
+
+        if (isWin) {
+            card.className = "bg-dark-900 border-2 border-emerald-500/80 rounded-3xl w-full max-w-sm p-6 space-y-4 shadow-2xl anim-modal text-center";
+            icon.innerText = "🎉";
+            title.innerText = "УСПЕХ! ВЫИГРЫШ!";
+            title.className = "text-xl font-black uppercase tracking-wider text-emerald-400";
+            desc.innerText = "Стрелка остановилась на секторе шанса! Персонаж добавлен в инвентарь:";
+            img.src = unit.img;
+            name.innerHTML = `<span class="text-white font-bold">${unit.name}</span> <span class="text-xs font-mono font-bold text-rarity-${unit.rarity}">(${unit.rarity})</span>`;
+        } else {
+            card.className = "bg-dark-900 border-2 border-rose-500/80 rounded-3xl w-full max-w-sm p-6 space-y-4 shadow-2xl anim-modal text-center";
+            icon.innerText = "💥";
+            title.innerText = "НЕУДАЧА...";
+            title.className = "text-xl font-black uppercase tracking-wider text-rose-400";
+            desc.innerText = "Стрелка промахнулась. Ваша ставка сгорела в колесе апгрейдера.";
+            img.src = "https://placehold.co/120x120/1f070a/ef4444?text=Fail";
+            name.innerHTML = `<span class="text-rose-400 font-bold">Цель (${unit.name}) не достигнута</span>`;
+        }
+
+        if (modal) modal.classList.remove('hidden');
+    };
+
+    window.closeUpgraderResultModal = function() {
+        document.getElementById('upgraderResultModal')?.classList.add('hidden');
     };
 
     window.switchUpgraderBottomTab = function(tab) {
@@ -3774,19 +4023,16 @@
         canvas.height = 680;
         const ctx = canvas.getContext('2d');
 
-        // Background gradient
         const bgGrad = ctx.createLinearGradient(0, 0, 1000, 680);
         bgGrad.addColorStop(0, '#070a12');
         bgGrad.addColorStop(1, '#0b1329');
         ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, 1000, 680);
 
-        // Header Title
         ctx.fillStyle = '#ffffff';
         ctx.font = '900 32px Inter, sans-serif';
         ctx.fillText('CAMERAMAN TD — TRADE VERDICT', 40, 56);
 
-        // Verdict subtitle
         const youTotal = tradeState.you.reduce((sum, item) => sum + (item ? item.value || 0 : 0), 0);
         const themTotal = tradeState.them.reduce((sum, item) => sum + (item ? item.value || 0 : 0), 0);
         const diffRatio = youTotal > 0 ? (themTotal - youTotal) / youTotal : 0;
@@ -3800,7 +4046,6 @@
         ctx.font = 'bold 22px Inter, sans-serif';
         ctx.fillText(verdict, 40, 94);
 
-        // Divider
         ctx.strokeStyle = '#1e293b';
         ctx.lineWidth = 2;
         ctx.beginPath();
@@ -3808,7 +4053,6 @@
         ctx.lineTo(960, 115);
         ctx.stroke();
 
-        // Sides summary boxes
         ctx.fillStyle = '#0f172a';
         ctx.fillRect(40, 135, 430, 80);
         ctx.fillRect(530, 135, 430, 80);
@@ -3825,7 +4069,6 @@
         ctx.font = '900 24px JetBrains Mono, monospace';
         ctx.fillText(`${themTotal.toLocaleString()} Val`, 545, 198);
 
-        // Render slots
         function drawSideUnits(side, startX) {
             const slots = tradeState[side];
             const size = 76;
@@ -3856,7 +4099,6 @@
         drawSideUnits('you', 40);
         drawSideUnits('them', 530);
 
-        // Watermark Footer
         ctx.fillStyle = '#64748b';
         ctx.font = 'bold 12px Inter, sans-serif';
         ctx.fillText('Generated by Cameraman TD Hub — Official Value List Portal', 40, 650);
@@ -3888,8 +4130,29 @@
             await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
             showToast("Изображение скопировано в буфер!", "success");
         } catch(e) {
-            showToast("Зажмите фото для сохранения на мобильном устройстве", "info");
+            showToast("Зажмите фото для сохранения", "info");
         }
+    };
+
+    window.switchCratesSubTab = function(subTab) {
+        currentCratesSubTab = subTab;
+        const hubBtn = document.getElementById('cratesTabHubBtn');
+        const invBtn = document.getElementById('cratesTabInvBtn');
+        const hubCont = document.getElementById('hubCratesContainer');
+        const invCont = document.getElementById('playerInvCratesContainer');
+
+        if (subTab === 'hub') {
+            hubBtn.className = "flex-1 py-1.5 rounded-xl text-xs font-bold transition bg-amber-600 text-white shadow-sm flex items-center justify-center gap-1.5";
+            invBtn.className = "flex-1 py-1.5 rounded-xl text-xs font-bold transition text-slate-400 hover:text-white flex items-center justify-center gap-1.5";
+            hubCont.classList.remove('hidden');
+            invCont.classList.add('hidden');
+        } else {
+            invBtn.className = "flex-1 py-1.5 rounded-xl text-xs font-bold transition bg-purple-600 text-white shadow-sm flex items-center justify-center gap-1.5";
+            hubBtn.className = "flex-1 py-1.5 rounded-xl text-xs font-bold transition text-slate-400 hover:text-white flex items-center justify-center gap-1.5";
+            invCont.classList.remove('hidden');
+            hubCont.classList.add('hidden');
+        }
+        renderCratesView();
     };
 
     window.renderCratesView = function() {
@@ -3897,33 +4160,73 @@
         const countBadge = document.getElementById('cratesCountBadge');
         if (countBadge) countBadge.innerText = `${cratesList.length} шт.`;
 
-        if (!activeCrateId && cratesList.length > 0) activeCrateId = cratesList[0].id;
-        const activeCrate = cratesList.find(c => c.id === activeCrateId) || cratesList[0];
+        // Рендер активного выбранного кейса
+        let activeCrate = null;
+        let isInvCrate = false;
+
+        if (activeCrateId.startsWith('inv_crate_')) {
+            const unitId = parseInt(activeCrateId.replace('inv_crate_', ''), 10);
+            const unit = catalogItems.find(u => u.id === unitId);
+            const invEntry = userInventory.find(i => i.unitId === unitId && i.qty > 0);
+            if (unit && invEntry) {
+                isInvCrate = true;
+                activeCrate = {
+                    id: activeCrateId,
+                    name: unit.name,
+                    img: unit.img,
+                    costValue: 0,
+                    mode: 'inventory',
+                    items: unit.crateDrops || []
+                };
+            }
+        }
+
+        if (!activeCrate) {
+            activeCrate = cratesList.find(c => c.id === activeCrateId) || cratesList[0];
+            if (activeCrate) activeCrateId = activeCrate.id;
+        }
 
         if (activeCrate) {
             document.getElementById('activeCrateName').innerText = activeCrate.name;
             document.getElementById('activeCrateImg').src = activeCrate.img;
-            document.getElementById('activeCrateCost').innerText = activeCrate.mode === 'free' ? 'БЕСПЛАТНО' : `${activeCrate.costValue.toLocaleString()} Val`;
-            document.getElementById('activeCrateModeBadge').innerText = activeCrate.mode === 'free' ? 'Тест / Демо 🆓' : 'В инвентарь 🎒';
+            
+            const costEl = document.getElementById('activeCrateCost');
+            const badgeEl = document.getElementById('activeCrateModeBadge');
+
+            if (isInvCrate) {
+                const unitId = parseInt(activeCrateId.replace('inv_crate_', ''), 10);
+                const invEntry = userInventory.find(i => i.unitId === unitId);
+                costEl.innerText = `В инвентаре: ${invEntry?.qty || 0} шт.`;
+                badgeEl.innerText = "Тратит 1 кейс 📦";
+            } else {
+                costEl.innerText = activeCrate.mode === 'free' ? 'БЕСПЛАТНО' : `${activeCrate.costValue.toLocaleString()} Val`;
+                badgeEl.innerText = activeCrate.mode === 'free' ? 'Тест / Демо 🆓' : 'В инвентарь 🎒';
+            }
 
             const editBtn = document.getElementById('activeCrateEditBtn');
-            if (editBtn) editBtn.classList.toggle('hidden', !isMasterAdmin);
+            if (editBtn) editBtn.classList.toggle('hidden', !isMasterAdmin || isInvCrate);
 
             const dropsContainer = document.getElementById('activeCrateDropsList');
             if (dropsContainer) {
-                dropsContainer.innerHTML = activeCrate.items.map(drop => {
-                    const unit = catalogItems.find(u => u.id === drop.unitId);
-                    if (!unit) return '';
-                    return `
-                        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-dark-950 border border-dark-border text-xs font-bold">
-                            <span class="text-rarity-${unit.rarity}">${unit.name}</span>
-                            <span class="text-amber-400 font-mono">${drop.chance}%</span>
-                        </div>
-                    `;
-                }).join('');
+                if (activeCrate.items && activeCrate.items.length > 0) {
+                    dropsContainer.innerHTML = activeCrate.items.map(drop => {
+                        const unit = catalogItems.find(u => u.id === drop.unitId);
+                        if (!unit) return '';
+                        return `
+                            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-dark-950 border border-dark-border text-xs font-bold">
+                                <img src="${unit.img}" class="w-4 h-4 object-contain">
+                                <span class="text-rarity-${unit.rarity}">${unit.name}</span>
+                                <span class="text-amber-400 font-mono">${drop.chance}%</span>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    dropsContainer.innerHTML = `<span class="text-xs text-slate-500">Дропы не настроены</span>`;
+                }
             }
         }
 
+        // Рендер сетки официальных кейсов
         if (grid) {
             grid.innerHTML = cratesList.map(c => `
                 <div onclick="selectActiveCrate('${c.id}')" class="p-3 rounded-2xl bg-dark-950 border ${c.id === activeCrateId ? 'border-amber-500 shadow-md shadow-amber-500/10' : 'border-dark-border'} hover:border-amber-400/80 cursor-pointer unit-card-hover transition flex items-center justify-between gap-3 group">
@@ -3938,6 +4241,41 @@
                 </div>
             `).join('');
         }
+
+        // Рендер сетки кейсов из инвентаря игрока (редкость CRATE)
+        const playerGrid = document.getElementById('playerInvCratesGrid');
+        const invCratesBadge = document.getElementById('invCratesCountBadge');
+        const myCrates = userInventory.map(item => {
+            const unit = catalogItems.find(u => u.id === item.unitId);
+            return (unit && unit.rarity === 'CRATE' && item.qty > 0) ? { ...unit, qty: item.qty } : null;
+        }).filter(Boolean);
+
+        if (invCratesBadge) invCratesBadge.innerText = `${myCrates.reduce((s, c) => s + c.qty, 0)} шт.`;
+
+        if (playerGrid) {
+            if (myCrates.length === 0) {
+                playerGrid.innerHTML = `
+                    <div class="col-span-full py-8 text-center bg-dark-950 border border-dark-border rounded-xl">
+                        <span class="text-2xl block mb-1">📦</span>
+                        <span class="text-xs text-slate-400 block font-bold">У вас нет кейсов в инвентаре</span>
+                        <span class="text-[10px] text-slate-500 block mt-0.5">Кейсы (редкость Crate) можно выбить в саммонах или выиграть в апгрейдере!</span>
+                    </div>
+                `;
+            } else {
+                playerGrid.innerHTML = myCrates.map(c => `
+                    <div onclick="selectActiveCrate('inv_crate_${c.id}')" class="p-3 rounded-2xl bg-dark-950 border ${activeCrateId === 'inv_crate_' + c.id ? 'border-purple-500 shadow-md shadow-purple-500/10' : 'border-dark-border'} hover:border-purple-400 cursor-pointer unit-card-hover transition flex items-center justify-between gap-3 group">
+                        <div class="flex items-center gap-3">
+                            <img src="${c.img}" class="w-12 h-12 rounded-xl bg-dark-900 border border-dark-border p-1 object-contain">
+                            <div>
+                                <h4 class="text-xs sm:text-sm font-black text-white group-hover:text-purple-400 transition truncate max-w-[150px]">${c.name}</h4>
+                                <span class="text-[11px] font-mono font-bold text-purple-400">У тебя: ${c.qty} шт.</span>
+                            </div>
+                        </div>
+                        <button class="px-2.5 py-1 rounded-lg bg-purple-600/20 text-purple-300 text-xs font-bold border border-purple-500/30">Открыть ➔</button>
+                    </div>
+                `).join('');
+            }
+        }
     };
 
     window.selectActiveCrate = function(id) {
@@ -3946,29 +4284,63 @@
     };
 
     function pickRandomDrop(crate) {
+        if (!crate.items || crate.items.length === 0) return catalogItems[0];
         const rand = Math.random() * 100;
         let cumulative = 0;
         for (const drop of crate.items) {
             cumulative += drop.chance;
             if (rand <= cumulative) {
-                return catalogItems.find(u => u.id === drop.unitId);
+                return catalogItems.find(u => u.id === drop.unitId) || catalogItems[0];
             }
         }
-        return catalogItems.find(u => u.id === crate.items[0]?.unitId);
+        return catalogItems.find(u => u.id === crate.items[0]?.unitId) || catalogItems[0];
     }
 
     window.spinActiveCrate = function(count = 1) {
         if (isRouletteSpinning) return;
-        const crate = cratesList.find(c => c.id === activeCrateId);
-        if (!crate || !crate.items || crate.items.length === 0) return showToast("Кейс пуст!", "warn");
 
-        const totalCost = crate.mode === 'free' ? 0 : crate.costValue * count;
-        if (crate.mode !== 'free' && userValBalance < totalCost) {
-            return showToast("Недостаточно Val на балансе!", "error");
+        let crate = null;
+        let isInventoryCrate = false;
+        let invUnitId = null;
+
+        if (activeCrateId.startsWith('inv_crate_')) {
+            invUnitId = parseInt(activeCrateId.replace('inv_crate_', ''), 10);
+            const unit = catalogItems.find(u => u.id === invUnitId);
+            const invEntry = userInventory.find(i => i.unitId === invUnitId);
+
+            if (!unit || !invEntry || invEntry.qty < count) {
+                return showToast(`Недостаточно кейсов в инвентаре (нужно ${count} шт.)!`, "error");
+            }
+
+            isInventoryCrate = true;
+            crate = {
+                id: activeCrateId,
+                name: unit.name,
+                img: unit.img,
+                items: unit.crateDrops || []
+            };
+        } else {
+            crate = cratesList.find(c => c.id === activeCrateId);
+            if (!crate) return showToast("Выберите кейс для открытия", "warn");
+
+            const totalCost = crate.mode === 'free' ? 0 : crate.costValue * count;
+            if (crate.mode !== 'free' && userValBalance < totalCost) {
+                return showToast("Недостаточно Val на балансе!", "error");
+            }
         }
 
-        if (crate.mode !== 'free') {
-            userValBalance -= totalCost;
+        if (!crate.items || crate.items.length === 0) {
+            return showToast("В этом кейсе не настроены дропы персонажей!", "warn");
+        }
+
+        // Списание средств / кейса
+        if (isInventoryCrate) {
+            const invIdx = userInventory.findIndex(i => i.unitId === invUnitId);
+            userInventory[invIdx].qty -= count;
+            if (userInventory[invIdx].qty <= 0) userInventory.splice(invIdx, 1);
+            saveUserData();
+        } else if (crate.mode !== 'free') {
+            userValBalance -= (crate.costValue * count);
             saveUserData();
             updateBalanceDisplays();
         }
@@ -3979,16 +4351,17 @@
             if (won) wonUnits.push(won);
         }
 
+        // Массовое открытие x5 / x10
         if (count > 1) {
             wonUnits.forEach(won => {
-                if (crate.mode !== 'free') {
-                    const ex = userInventory.find(i => i.unitId === won.id);
-                    if (ex) ex.qty++;
-                    else userInventory.push({ unitId: won.id, qty: 1 });
-                }
+                const ex = userInventory.find(i => i.unitId === won.id);
+                if (ex) ex.qty++;
+                else userInventory.push({ unitId: won.id, qty: 1 });
+
                 addDropToLiveTicker({
                     user: currentUserNick,
                     unitName: won.name,
+                    unitImg: won.img,
                     rarity: won.rarity,
                     source: crate.name,
                     time: Date.now()
@@ -3996,11 +4369,12 @@
             });
             saveUserData();
             renderInventory();
+            renderCratesView();
             openMultiCrateWonModal(wonUnits);
             return;
         }
 
-        // Single spin with realistic carousel animation
+        // Одиночное открытие с плавной рулеткой
         isRouletteSpinning = true;
         ['spinCrateBtn1', 'spinCrateBtn5', 'spinCrateBtn10'].forEach(id => {
             const btn = document.getElementById(id);
@@ -4010,7 +4384,6 @@
         const track = document.getElementById('rouletteTrack');
         const wonUnit = wonUnits[0];
 
-        // Generate 45 items in carousel with won unit at index 36
         const rouletteItems = [];
         for (let i = 0; i < 45; i++) {
             if (i === 36) {
@@ -4031,10 +4404,8 @@
             </div>
         `).join('');
 
-        // Card width: 96px + gap: 8px = 104px
-        // Target index 36 with random needle offset within the card (-35px to +35px)
-        const cardWidth = 104;
-        const randomCardOffset = (Math.random() - 0.5) * 70;
+        const cardWidth = 104; // 96px карточка + 8px gap
+        const randomCardOffset = (Math.random() - 0.5) * 65;
         const targetX = -(36 * cardWidth) + (window.innerWidth < 640 ? 120 : 360) + randomCardOffset;
 
         requestAnimationFrame(() => {
@@ -4049,13 +4420,13 @@
                 if (btn) btn.disabled = false;
             });
 
-            if (crate.mode !== 'free') {
-                const ex = userInventory.find(i => i.unitId === wonUnit.id);
-                if (ex) ex.qty++;
-                else userInventory.push({ unitId: wonUnit.id, qty: 1 });
-                saveUserData();
-                renderInventory();
-            }
+            // Добавление выигранного юнита
+            const ex = userInventory.find(i => i.unitId === wonUnit.id);
+            if (ex) ex.qty++;
+            else userInventory.push({ unitId: wonUnit.id, qty: 1 });
+            saveUserData();
+            renderInventory();
+            renderCratesView();
 
             const wonBanner = document.getElementById('crateWonBanner');
             document.getElementById('crateWonImg').src = wonUnit.img;
@@ -4068,6 +4439,7 @@
             addDropToLiveTicker({
                 user: currentUserNick,
                 unitName: wonUnit.name,
+                unitImg: wonUnit.img,
                 rarity: wonUnit.rarity,
                 source: crate.name,
                 time: Date.now()
@@ -4095,6 +4467,7 @@
         document.getElementById('multiCrateWonModal')?.classList.add('hidden');
         updateBalanceDisplays();
         renderInventory();
+        renderCratesView();
     };
 
     window.renderLiveTicker = function() {
@@ -4111,6 +4484,7 @@
             <div class="themed-ticker-chip px-2.5 py-0.5 rounded-full flex items-center gap-1.5 shrink-0">
                 <span class="text-slate-300 font-bold">${ev.user || 'Trader'}</span>
                 <span class="text-slate-500">выбил</span>
+                <img src="${ev.unitImg || 'https://placehold.co/24x24/0f172a/38bdf8'}" class="w-4 h-4 rounded object-contain inline-block">
                 <span class="font-bold text-rarity-${ev.rarity}">${ev.unitName}</span>
                 <span class="text-[9px] text-slate-500 font-mono">(${ev.source || 'Crate'})</span>
             </div>
@@ -4175,6 +4549,8 @@
         const data = wikiStats[unit.id] || { levels: [] };
         const levels = data.levels || [];
 
+        let runningCost = 0;
+
         box.innerHTML = `
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-3 border-b border-dark-border">
                 <div class="flex items-center gap-3">
@@ -4201,28 +4577,44 @@
                 <table class="w-full text-left text-xs font-mono">
                     <thead class="bg-dark-900 text-slate-400 uppercase text-[10px] border-b border-dark-border font-bold">
                         <tr>
-                            <th class="p-2.5">УР.</th>
-                            <th class="p-2.5">ЦЕНА</th>
-                            <th class="p-2.5">УРОН</th>
-                            <th class="p-2.5">КД (сек)</th>
-                            <th class="p-2.5">ДАЛЬНОСТЬ</th>
-                            <th class="p-2.5">РАСЧЕТНЫЙ DPS</th>
+                            <th class="p-2.5">Уровни</th>
+                            <th class="p-2.5">Цена</th>
+                            <th class="p-2.5">Общая цена</th>
+                            <th class="p-2.5">Урон / Доход</th>
+                            <th class="p-2.5">Перезарядка</th>
+                            <th class="p-2.5">Дальность</th>
+                            <th class="p-2.5">Урон в секунду</th>
+                            <th class="p-2.5 text-amber-400">Цена продажи (25%)</th>
+                            <th class="p-2.5">Тип атаки</th>
                             ${isMasterAdmin ? '<th class="p-2.5 text-right">Действия</th>' : ''}
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-dark-border/60">
                         ${levels.length === 0 ? `
-                            <tr><td colspan="${isMasterAdmin ? 7 : 6}" class="p-4 text-center text-slate-500">Уровни прокачки пока не заполнены</td></tr>
+                            <tr><td colspan="${isMasterAdmin ? 10 : 9}" class="p-4 text-center text-slate-500">Уровни прокачки пока не заполнены</td></tr>
                         ` : levels.map((lvl, idx) => {
-                            const dps = (lvl.damage / Math.max(0.1, lvl.cooldown)).toFixed(1);
+                            runningCost += (lvl.cost || 0);
+                            const sellPrice = Math.round(runningCost * 0.25);
+                            const isFarm = lvl.attackType === 'Farm';
+                            const dps = isFarm ? '—' : ((lvl.damage || 0) / Math.max(0.1, lvl.cooldown || 1)).toFixed(1);
+
                             return `
                                 <tr class="hover:bg-dark-900/60 transition">
-                                    <td class="p-2.5 font-bold text-white">Lvl ${lvl.level}</td>
-                                    <td class="p-2.5 text-amber-400 font-bold">${lvl.cost.toLocaleString()} $</td>
-                                    <td class="p-2.5 text-rose-400 font-bold">${lvl.damage}</td>
-                                    <td class="p-2.5 text-slate-300">${lvl.cooldown}s</td>
-                                    <td class="p-2.5 text-cyan-400 font-bold">${lvl.range}</td>
-                                    <td class="p-2.5 text-emerald-400 font-black">${dps} DPS</td>
+                                    <td class="p-2.5 font-bold text-white">${lvl.level}</td>
+                                    <td class="p-2.5 text-slate-300 font-bold">$${(lvl.cost || 0).toLocaleString()}</td>
+                                    <td class="p-2.5 text-cyan-400 font-bold">$${runningCost.toLocaleString()}</td>
+                                    <td class="p-2.5 ${isFarm ? 'text-amber-400 font-bold' : 'text-rose-400 font-bold'}">
+                                        ${isFarm ? `+$${(lvl.farmIncome || 0)}/волну` : lvl.damage}
+                                    </td>
+                                    <td class="p-2.5 text-slate-300">${isFarm ? '—' : (lvl.cooldown + 's')}</td>
+                                    <td class="p-2.5 text-slate-300">${isFarm ? '—' : lvl.range}</td>
+                                    <td class="p-2.5 text-emerald-400 font-black">${dps}</td>
+                                    <td class="p-2.5 text-amber-400 font-bold">$${sellPrice.toLocaleString()}</td>
+                                    <td class="p-2.5">
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isFarm ? 'bg-amber-500/20 text-amber-300' : 'bg-blue-500/20 text-blue-300'}">
+                                            ${lvl.attackType || 'Single'}
+                                        </span>
+                                    </td>
                                     ${isMasterAdmin ? `
                                         <td class="p-2.5 text-right">
                                             <button onclick="deleteWikiLevel(${unit.id}, ${idx})" class="text-rose-400 hover:text-white px-2 py-1 bg-dark-900 rounded">✕</button>
@@ -4237,13 +4629,29 @@
         `;
     };
 
+    window.handleWikiAttackTypeChange = function(type) {
+        const combatGroup = document.getElementById('wikiCombatFieldsGroup');
+        const farmGroup = document.getElementById('wikiFarmFieldsGroup');
+        if (type === 'Farm') {
+            combatGroup?.classList.add('hidden');
+            farmGroup?.classList.remove('hidden');
+        } else {
+            combatGroup?.classList.remove('hidden');
+            farmGroup?.classList.add('hidden');
+        }
+        updateWikiModalDpsPreview();
+    };
+
     window.openWikiLevelModal = function(unitId) {
         document.getElementById('wikiLevelUnitId').value = unitId;
         document.getElementById('wikiLvlNumInput').value = ((wikiStats[unitId]?.levels?.length || 0) + 1);
+        document.getElementById('wikiLvlAttackTypeSelect').value = "Single";
         document.getElementById('wikiLvlCostInput').value = "500";
         document.getElementById('wikiLvlDmgInput').value = "100";
-        document.getElementById('wikiLvlCdInput').value = "1.5";
+        document.getElementById('wikiLvlCdInput').value = "1.0";
         document.getElementById('wikiLvlRangeInput').value = "15.0";
+        document.getElementById('wikiLvlFarmIncomeInput').value = "250";
+        handleWikiAttackTypeChange("Single");
         updateWikiModalDpsPreview();
         document.getElementById('wikiLevelEditorModal')?.classList.remove('hidden');
     };
@@ -4253,23 +4661,30 @@
     };
 
     window.updateWikiModalDpsPreview = function() {
+        const type = document.getElementById('wikiLvlAttackTypeSelect')?.value;
+        const prev = document.getElementById('wikiLvlDpsPreview');
+        if (type === 'Farm') {
+            if (prev) prev.innerText = "Ферма монет (Income)";
+            return;
+        }
         const dmg = parseFloat(document.getElementById('wikiLvlDmgInput').value) || 0;
         const cd = parseFloat(document.getElementById('wikiLvlCdInput').value) || 1;
         const dps = (dmg / Math.max(0.1, cd)).toFixed(2);
-        const prev = document.getElementById('wikiLvlDpsPreview');
         if (prev) prev.innerText = `${dps} DPS`;
     };
 
     window.saveWikiLevelFromModal = function() {
         const unitId = parseInt(document.getElementById('wikiLevelUnitId').value, 10);
         const level = parseInt(document.getElementById('wikiLvlNumInput').value, 10) || 1;
+        const attackType = document.getElementById('wikiLvlAttackTypeSelect').value;
         const cost = parseInt(document.getElementById('wikiLvlCostInput').value, 10) || 0;
         const damage = parseFloat(document.getElementById('wikiLvlDmgInput').value) || 0;
         const cooldown = parseFloat(document.getElementById('wikiLvlCdInput').value) || 1.0;
         const range = parseFloat(document.getElementById('wikiLvlRangeInput').value) || 10.0;
+        const farmIncome = parseInt(document.getElementById('wikiLvlFarmIncomeInput').value, 10) || 0;
 
         if (!wikiStats[unitId]) wikiStats[unitId] = { levels: [] };
-        wikiStats[unitId].levels.push({ level, cost, damage, cooldown, range });
+        wikiStats[unitId].levels.push({ level, attackType, cost, damage, cooldown, range, farmIncome });
         wikiStats[unitId].levels.sort((a, b) => a.level - b.level);
 
         try { localStorage.setItem('ctd_wiki_data', JSON.stringify(wikiStats)); } catch(e) {}
@@ -4309,7 +4724,6 @@
             }
         });
 
-        // Render pool
         const poolBox = document.getElementById('tierPoolBox');
         const poolCount = document.getElementById('tierPoolCount');
         const query = document.getElementById('tierPoolSearchInput')?.value.trim().toLowerCase() || '';
@@ -4350,7 +4764,6 @@
         e.currentTarget.classList.remove('bg-blue-500/10');
         if (!draggedUnitId) return;
 
-        // Remove from existing
         ['S', 'A', 'B', 'C', 'D'].forEach(t => {
             tierListState[t] = tierListState[t].filter(id => id !== draggedUnitId);
         });
@@ -4362,7 +4775,7 @@
 
     window.handleTierItemClick = function(id) {
         const ranks = ['S', 'A', 'B', 'C', 'D', 'Сбросить в пул'];
-        const chosen = prompt(`Выберите ранг для персонажа:\n${ranks.join(', ')}`);
+        const chosen = prompt(`Выберите ранг:\n${ranks.join(', ')}`);
         if (!chosen) return;
         const rank = chosen.trim().toUpperCase();
 
@@ -4384,7 +4797,7 @@
     window.resetTierListBoard = function() {
         tierListState = { S: [], A: [], B: [], C: [], D: [] };
         renderTierListBoard();
-        showToast("Тир-лист сброшен в исходный пул", "info");
+        showToast("Тир-лист сброшен", "info");
     };
 
     window.exportTierListImage = function() {
@@ -4393,11 +4806,9 @@
         canvas.height = 800;
         const ctx = canvas.getContext('2d');
 
-        // Background
         ctx.fillStyle = '#070a12';
         ctx.fillRect(0, 0, 1200, 800);
 
-        // Header
         ctx.fillStyle = '#ffffff';
         ctx.font = '900 32px Inter, sans-serif';
         ctx.fillText('CAMERAMAN TD — TIER LIST RANKING', 40, 50);
@@ -4460,7 +4871,6 @@
             return 0;
         });
 
-        // Calculate statistics
         const totalNetWorth = userInventory.reduce((acc, i) => {
             const u = catalogItems.find(u => u.id === i.unitId);
             return acc + ((u?.value || 0) * i.qty);
@@ -4478,7 +4888,7 @@
         document.getElementById('invTotalUnitsCount').innerText = `${totalCount} шт.`;
 
         if (items.length === 0) {
-            listContainer.innerHTML = `<div class="py-12 text-center text-slate-500 font-bold text-xs">Коллекция пуста. Открывайте кейсы или крутите колесо апгрейдера!</div>`;
+            listContainer.innerHTML = `<div class="py-12 text-center text-slate-500 font-bold text-xs">Коллекция пуста</div>`;
             return;
         }
 
@@ -4538,15 +4948,17 @@
         saveUserData();
         updateBalanceDisplays();
         renderInventory();
+        renderCratesView();
         showToast(`Продано x${actualQty} ${unit.name} за +${gain.toLocaleString()} Val!`, "success");
     };
 
     window.clearFullInventory = function() {
-        showCustomConfirm("Очистить инвентарь", "Вы уверены, что хотите полностью очистить коллекцию предметов?", (confirmed) => {
+        showCustomConfirm("Очистить инвентарь", "Вы уверены, что хотите полностью очистить коллекцию?", (confirmed) => {
             if (confirmed) {
                 userInventory = [];
                 saveUserData();
                 renderInventory();
+                renderCratesView();
                 showToast("Инвентарь очищен", "info");
             }
         });
@@ -4676,12 +5088,26 @@
                     <span class="text-xs text-white truncate">${u.name}</span>
                 </div>
                 <div class="flex items-center gap-1 shrink-0">
-                    <input type="number" min="0" max="100" data-unit-id="${u.id}" value="${mapChances[u.id] || 0}" class="crate-chance-input w-14 bg-dark-950 border border-dark-border text-white text-xs font-mono font-bold px-2 py-0.5 rounded outline-none text-right">
+                    <input type="number" min="0" max="100" data-unit-id="${u.id}" oninput="updateCrateBuilderTotalChance()" value="${mapChances[u.id] || 0}" class="crate-chance-input w-14 bg-dark-950 border border-dark-border text-white text-xs font-mono font-bold px-2 py-0.5 rounded outline-none text-right">
                     <span class="text-xs text-slate-400">%</span>
                 </div>
             </div>
         `).join('');
+
+        updateCrateBuilderTotalChance();
     }
+
+    window.updateCrateBuilderTotalChance = function() {
+        let sum = 0;
+        document.querySelectorAll('.crate-chance-input').forEach(inp => {
+            sum += parseFloat(inp.value) || 0;
+        });
+        const badge = document.getElementById('crateTotalChanceBadge');
+        if (badge) {
+            badge.innerText = `Сумма: ${sum.toFixed(1)}%`;
+            badge.className = `text-[11px] font-mono font-bold ${Math.abs(sum - 100) < 0.1 ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' : 'text-amber-400 bg-amber-500/10 border-amber-500/30'} px-2.5 py-1 rounded-lg border`;
+        }
+    };
 
     window.saveCrateFromModal = function() {
         const name = document.getElementById('crateNameInput').value.trim();
@@ -4724,7 +5150,7 @@
     };
 
     window.editActiveCrate = function() {
-        if (!activeCrateId) return;
+        if (!activeCrateId || activeCrateId.startsWith('inv_crate_')) return;
         openCrateBuilderModal(activeCrateId);
     };
 
@@ -4755,7 +5181,7 @@
                 body: JSON.stringify({
                     embeds: [{
                         title: "🎥 Cameraman TD Hub — Тест интеграции",
-                        description: `Связь с порталом успешно настроена!\nИгрок: **${currentUserNick}**`,
+                        description: `Связь с порталом настроена!\nИгрок: **${currentUserNick}**`,
                         color: 2449499,
                         timestamp: new Date().toISOString()
                     }]
@@ -4763,7 +5189,7 @@
             });
             showToast("Тестовое оповещение отправлено в Discord!", "success");
         } catch(e) {
-            showToast("Ошибка отправки в Discord: " + e.message, "error");
+            showToast("Ошибка отправки: " + e.message, "error");
         }
     };
 
@@ -4784,7 +5210,7 @@
                     lastUpdated: Date.now()
                 }, { merge: true });
 
-                if (manualNotification) showToast("База успешно записана в Google Cloud Firestore!", "success");
+                if (manualNotification) showToast("База записана в Google Cloud Firestore!", "success");
             }
         } catch(e) {
             if (manualNotification) showToast("Ошибка синхронизации: " + e.message, "error");
@@ -4807,7 +5233,7 @@
                     renderCratesView();
                     renderWikiList();
                     renderUpgraderBottomList();
-                    showToast("Актуальные данные успешно загружены из облака!", "success");
+                    showToast("Актуальные данные загружены из облака!", "success");
                 } else {
                     showToast("В облаке пока нет записей", "info");
                 }
@@ -4846,7 +5272,7 @@
                 renderCratesView();
                 renderWikiList();
                 forceSyncToCloud(true);
-                showToast("Резервная копия успешно восстановлена!", "success");
+                showToast("Резервная копия восстановлена!", "success");
             } catch(err) {
                 showToast("Неверный формат JSON файла", "error");
             }
@@ -4870,11 +5296,19 @@
         if (tab === 'players') renderAdminPlayersList();
     };
 
+    // Таблица в админке: строго от Basic до Crate
     window.renderAdminItemsTable = function() {
         const tbody = document.getElementById('adminItemsTableBody');
         if (!tbody) return;
 
-        tbody.innerHTML = catalogItems.map(u => `
+        const sortedUnits = [...catalogItems].sort((a, b) => {
+            const wA = RARITY_WEIGHTS[a.rarity] || 0;
+            const wB = RARITY_WEIGHTS[b.rarity] || 0;
+            if (wA !== wB) return wA - wB;
+            return (a.value || 0) - (b.value || 0);
+        });
+
+        tbody.innerHTML = sortedUnits.map(u => `
             <tr class="hover:bg-dark-900/60 transition">
                 <td class="p-2.5 flex items-center gap-2">
                     <img src="${u.img}" class="w-7 h-7 rounded bg-dark-900 object-contain">
@@ -4959,8 +5393,8 @@
 
         const topGrid = document.getElementById('homeFeaturedUnitsGrid');
         if (topGrid) {
-            const top5 = [...catalogItems].sort((a, b) => (b.value || 0) - (a.value || 0)).slice(0, 5);
-            topGrid.innerHTML = top5.map(u => `
+            const topUnits = [...catalogItems].sort((a, b) => (b.value || 0) - (a.value || 0)).slice(0, 6);
+            topGrid.innerHTML = topUnits.map(u => `
                 <div onclick="switchMainTab('catalog')" class="p-2.5 rounded-2xl bg-dark-950 border border-rarity-${u.rarity} hover:border-blue-500 cursor-pointer unit-card-hover transition text-center flex flex-col justify-between">
                     <div class="w-full aspect-square rounded-xl bg-dark-900 p-1 flex items-center justify-center mb-1 overflow-hidden">
                         <img src="${u.img}" class="max-h-full max-w-full object-contain">
