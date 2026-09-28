@@ -476,6 +476,52 @@
             </div>
             <div id="homeFeaturedUnitsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5"></div>
         </div>
+
+        <div class="bg-dark-900 border border-dark-border rounded-2xl p-4 sm:p-5 space-y-3">
+            <div class="flex items-center gap-2">
+                <span class="text-xl">❓</span>
+                <h3 class="text-sm sm:text-base font-bold text-white">Частые вопросы и помощь (FAQ)</h3>
+            </div>
+            <div class="space-y-2 text-xs">
+                <details class="bg-dark-950 border border-dark-border rounded-xl p-3 cursor-pointer group">
+                    <summary class="font-bold text-slate-200 flex justify-between items-center select-none group-hover:text-blue-400 transition">
+                        <span>В чем разница между Trade Value и Game Value?</span>
+                        <span class="text-slate-500 text-sm transition group-open:rotate-180">▼</span>
+                    </summary>
+                    <p class="mt-2 text-slate-400 leading-relaxed">
+                        <b>Trade Value</b> — официальная рыночная ценность персонажа для обменов (калькулятор W/F/L).<br>
+                        <b>Game Value</b> — игровая стоимость юнита в монетах Val. Она используется как ставка в Апгрейдере, при открытии кейсов и начисляется при продаже юнитов из инвентаря.
+                    </p>
+                </details>
+                <details class="bg-dark-950 border border-dark-border rounded-xl p-3 cursor-pointer group">
+                    <summary class="font-bold text-slate-200 flex justify-between items-center select-none group-hover:text-amber-400 transition">
+                        <span>Как работает Апгрейдер персонажей?</span>
+                        <span class="text-slate-500 text-sm transition group-open:rotate-180">▼</span>
+                    </summary>
+                    <p class="mt-2 text-slate-400 leading-relaxed">
+                        Вы ставите своего юнита или ставку Val слева, выбираете цель справа и крутите колесо. Золотая стрелка вращается и останавливается в определенном секторе. Если стрелка указывает на зеленый сектор — цель выиграна и отправляется в инвентарь!
+                    </p>
+                </details>
+                <details class="bg-dark-950 border border-dark-border rounded-xl p-3 cursor-pointer group">
+                    <summary class="font-bold text-slate-200 flex justify-between items-center select-none group-hover:text-purple-400 transition">
+                        <span>Что такое редкость Crate и как открывать свои кейсы?</span>
+                        <span class="text-slate-500 text-sm transition group-open:rotate-180">▼</span>
+                    </summary>
+                    <p class="mt-2 text-slate-400 leading-relaxed">
+                        Персонажи с редкостью <b>Crate</b> (например, Scientist Crate) — это кейсы, которые можно хранить в инвентаре. Перейдите во вкладку <b>Кейсы ➔ Твои кейсы</b>, выберите ящик и откройте его, потратив 1 шт. из инвентаря без списания монет!
+                    </p>
+                </details>
+                <details class="bg-dark-950 border border-dark-border rounded-xl p-3 cursor-pointer group">
+                    <summary class="font-bold text-slate-200 flex justify-between items-center select-none group-hover:text-emerald-400 transition">
+                        <span>Как продавать персонажей за монеты Val?</span>
+                        <span class="text-slate-500 text-sm transition group-open:rotate-180">▼</span>
+                    </summary>
+                    <p class="mt-2 text-slate-400 leading-relaxed">
+                        Откройте раздел <b>Инвентарь</b>. Напротив каждого юнита доступна кнопка продажи за Game Value. Полученные Val можно сразу тратить на кейсы или прокачку в апгрейдере.
+                    </p>
+                </details>
+            </div>
+        </div>
     </section>
 
     <section id="catalogSection" class="hidden space-y-4">
@@ -1321,7 +1367,6 @@
     </section>
 </main>
 
-<!-- Мобильная нижняя навигация -->
 <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-dark-900/95 backdrop-blur-md border-t border-dark-border py-1.5 px-3 flex items-center justify-around shadow-lg">
     <button onclick="switchMainTab('home')" class="flex flex-col items-center gap-0.5 py-1 px-2 text-slate-400 font-bold text-[11px] hover:text-white">
         <span class="text-lg">🏠</span> <span data-i18n="nav_home">Главная</span>
@@ -1434,6 +1479,21 @@
     </div>
 </div>
 
+<div id="crateResultModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-3">
+    <div class="bg-dark-900 border-2 border-amber-500/80 rounded-3xl w-full max-w-sm p-6 space-y-4 shadow-2xl anim-modal text-center">
+        <div class="text-5xl">🎉</div>
+        <h3 class="text-xl font-black uppercase tracking-wider text-amber-400">УСПЕХ! ВЫИГРЫШ!</h3>
+        <p class="text-xs text-slate-300">Вам выпал новый персонаж из кейса:</p>
+        <div class="w-28 h-28 mx-auto rounded-2xl bg-dark-950 border border-dark-border p-2 flex items-center justify-center overflow-hidden shadow-inner">
+            <img id="crateResultImg" src="" class="max-h-full max-w-full object-contain">
+        </div>
+        <div id="crateResultUnitName" class="text-sm font-bold text-white"></div>
+        <button onclick="closeCrateResultModal()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs rounded-xl shadow-md transition cursor-pointer">
+            Забрать в коллекцию 🎒
+        </button>
+    </div>
+</div>
+
 <!-- Модальное окно профиля игрока -->
 <div id="userAuthModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-3">
     <div class="bg-dark-900 border border-dark-border rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl anim-modal">
@@ -1487,7 +1547,6 @@
     </div>
 </div>
 
-<!-- Модальное окно создания/редактирования персонажа -->
 <div id="itemEditorModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-3">
     <div class="bg-dark-900 border border-dark-border rounded-2xl w-full max-w-md p-4 sm:p-5 space-y-3 shadow-2xl max-h-[90vh] overflow-y-auto anim-modal">
         <div class="flex items-center justify-between pb-2 border-b border-dark-border">
@@ -1557,7 +1616,10 @@
                     <select id="itemTrendSelect" class="w-full bg-dark-950 border border-dark-border rounded-xl px-2.5 py-2 text-white outline-none">
                         <option value="stable">⚖️ Стабильно</option>
                         <option value="rising">📈 Растёт</option>
+                        <option value="slow_rising">↗️ Медленно растёт</option>
+                        <option value="slow_dropping">↘️ Медленно падает</option>
                         <option value="dropping">🔻 Падает</option>
+                        <option value="fast_dropping">📉 Быстро падает</option>
                         <option value="hyped">🚀 Хайп (Сильный рост)</option>
                         <option value="fluctuating">〰️ Колеблется</option>
                     </select>
@@ -1887,6 +1949,9 @@
         { id: 11, name: "Upgraded Titan Cinemaman", rarity: "MYTHIC", category: "titans", value: 28000, gameValue: 28000, isValNA: false, demand: 9, isDemNA: false, trend: "hyped", limit: "—", summon: "—", img: "https://placehold.co/180x180/26070a/ef4444?text=Titan+Cinemaman" },
         { id: 12, name: "Upgraded Titan", rarity: "EXCLUSIVE", category: "titans", value: 45000, gameValue: 45000, isValNA: false, demand: 10, isDemNA: false, trend: "hyped", limit: "—", summon: "—", img: "https://placehold.co/180x180/28081a/ec4899?text=Upgraded+Titan" },
         { id: 14, name: "Lucky Gamepass", rarity: "GAMEPASS", category: "combat", value: 35000, gameValue: 35000, isValNA: false, demand: 8, isDemNA: false, trend: "stable", limit: "—", summon: "—", img: "https://placehold.co/180x180/083344/06b6d4?text=Gamepass" },
+        { id: 15, name: "Scientist Cameraman", rarity: "EXCLUSIVE", category: "combat", value: 18000, gameValue: 18000, isValNA: false, demand: 8, isDemNA: false, trend: "slow_rising", limit: "—", summon: "—", img: "https://placehold.co/180x180/0f172a/ec4899?text=Scientist+Cam" },
+        { id: 16, name: "Large Scientist Cameraman", rarity: "EXCLUSIVE", category: "combat", value: 24000, gameValue: 24000, isValNA: false, demand: 8.5, isDemNA: false, trend: "slow_rising", limit: "—", summon: "—", img: "https://placehold.co/180x180/0f172a/ec4899?text=Large+Scientist" },
+        { id: 17, name: "Engineer Cameraman", rarity: "EXCLUSIVE", category: "combat", value: 38000, gameValue: 38000, isValNA: false, demand: 9.5, isDemNA: false, trend: "hyped", limit: "—", summon: "—", img: "https://placehold.co/180x180/0f172a/ec4899?text=Engineer+Cam" },
         { 
             id: 13, 
             name: "Scientist Crate", 
@@ -1902,9 +1967,9 @@
             summon: "—", 
             img: "https://placehold.co/180x180/261304/f97316?text=Scientist+Crate",
             crateDrops: [
-                { unitId: 8, chance: 70 }, // Ninja Cameraman
-                { unitId: 7, chance: 29 }, // Big Cameraman
-                { unitId: 11, chance: 1 }  // Upgraded Titan Cinemaman
+                { unitId: 15, chance: 89 }, // Scientist Cameraman
+                { unitId: 16, chance: 10 }, // Large Scientist Cameraman
+                { unitId: 17, chance: 1 }   // Engineer Cameraman
             ]
         }
     ];
@@ -2508,7 +2573,6 @@
         switchMainTab(tabName);
     };
 
-    // Нажатие на логотип: сразу на главную + отсчет 5 кликов для админки
     window.handleLogoClick = function() {
         switchMainTab('home');
 
@@ -2801,7 +2865,7 @@
             modal_trade_val: "1. Trade Value (Ценность):",
             modal_game_val: "2. Game Value (Игровой):",
             modal_game_val_hint: "Для апгрейдера и кейсов",
-            modal_demand: "Спрос (от 1 до 10):",
+            modal_demand: "Спрос (от 0 до 10):",
             modal_trend: "Тренд стоимости:",
             modal_limit: "Лимит на карте:",
             modal_summon: "Выпадает из саммона:",
@@ -2931,7 +2995,7 @@
             modal_trade_val: "1. Trade Value:",
             modal_game_val: "2. Game Value:",
             modal_game_val_hint: "Used for upgrader & crates",
-            modal_demand: "Demand (1 to 10):",
+            modal_demand: "Demand (0 to 10):",
             modal_trend: "Price Trend:",
             modal_limit: "Map Limit:",
             modal_summon: "Summon Source:",
@@ -3016,6 +3080,9 @@
 
     function getTrendBadge(trend) {
         if (trend === 'rising') return '<span class="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/30">📈 Растёт</span>';
+        if (trend === 'slow_rising') return '<span class="text-[10px] text-teal-400 font-bold bg-teal-500/10 px-1.5 py-0.5 rounded border border-teal-500/30">↗️ Медленно растёт</span>';
+        if (trend === 'slow_dropping') return '<span class="text-[10px] text-amber-500 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/30">↘️ Медленно падает</span>';
+        if (trend === 'fast_dropping') return '<span class="text-[10px] text-rose-600 font-bold bg-rose-600/10 px-1.5 py-0.5 rounded border border-rose-600/30">📉 Быстро падает</span>';
         if (trend === 'dropping') return '<span class="text-[10px] text-rose-400 font-bold bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/30">🔻 Падает</span>';
         if (trend === 'hyped') return '<span class="text-[10px] text-pink-400 font-bold bg-pink-500/10 px-1.5 py-0.5 rounded border border-pink-500/30">🚀 Хайп</span>';
         if (trend === 'fluctuating') return '<span class="text-[10px] text-amber-400 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/30">〰️ Колеблется</span>';
@@ -3354,15 +3421,11 @@
 
         const winChanceRatio = Math.min(100, Math.max(0, upgraderState.winChance)) / 100;
         const winAngle = winChanceRatio * 2 * Math.PI;
-        const topAngle = -Math.PI / 2; // Начало сектора шанса ровно сверху (12 часов)
+        const topAngle = -Math.PI / 2;
 
-        // Нормализованный угол стрелки относительно 12 часов [0 .. 2PI)
         let normalizedOffset = ((upgraderState.arrowAngle - topAngle) % (2 * Math.PI) + (2 * Math.PI)) % (2 * Math.PI);
-
-        // Стрелка находится над сектором победы
         const isArrowTouchingWin = winAngle > 0 && normalizedOffset <= winAngle;
 
-        // 1. Отрисовка сектора победы (Win slice) от 12 часов
         ctx.save();
         ctx.beginPath();
         ctx.moveTo(cx, cy);
@@ -3382,7 +3445,6 @@
         ctx.fill();
         ctx.restore();
 
-        // 2. Сектор проигрыша (Fail slice)
         if (winAngle < 2 * Math.PI) {
             ctx.beginPath();
             ctx.moveTo(cx, cy);
@@ -3395,14 +3457,12 @@
             ctx.fill();
         }
 
-        // Внешнее кольцо колеса с динамической подсветкой
         ctx.beginPath();
         ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
         ctx.lineWidth = 5;
         ctx.strokeStyle = isArrowTouchingWin ? '#10b981' : '#334155';
         ctx.stroke();
 
-        // Центральный круг
         ctx.beginPath();
         ctx.arc(cx, cy, radius * 0.64, 0, 2 * Math.PI);
         ctx.fillStyle = '#0b111e';
@@ -3411,12 +3471,10 @@
         ctx.strokeStyle = '#1e293b';
         ctx.stroke();
 
-        // 3. ВРАЩАЮЩАЯСЯ ЖЕЛТАЯ СТРЕЛКА
         ctx.save();
         ctx.translate(cx, cy);
         ctx.rotate(upgraderState.arrowAngle);
 
-        // Линия стрелки от хаба к наконечнику
         ctx.beginPath();
         ctx.moveTo(radius * 0.64, 0);
         ctx.lineTo(radius - 16, 0);
@@ -3424,7 +3482,6 @@
         ctx.strokeStyle = '#f59e0b';
         ctx.stroke();
 
-        // Наконечник стрелки, направленный наружу на сектор
         ctx.beginPath();
         ctx.moveTo(radius - 2, 0);
         ctx.lineTo(radius - 18, -9);
@@ -3640,35 +3697,27 @@
         const winChance = upgraderState.winChance;
         const winAngle = (winChance / 100) * 2 * Math.PI;
         const isWin = Math.random() * 100 < winChance;
-        const topAngle = -Math.PI / 2; // Верхняя точка колеса (12 часов)
+        const topAngle = -Math.PI / 2;
 
-        // Выбираем ТОЧНЫЙ целевой угол смещения от 12 часов
         let targetOffset = 0;
         if (isWin) {
-            // Гарантированно внутри выигрышного сектора с безопасными отступами от краев
             const pad = Math.min(0.08, winAngle * 0.15);
             targetOffset = pad + Math.random() * Math.max(0.01, winAngle - 2 * pad);
         } else {
-            // Гарантированно внутри сектора проигрыша
             const failSectorSize = (2 * Math.PI) - winAngle;
             const pad = Math.min(0.08, failSectorSize * 0.15);
             targetOffset = winAngle + pad + Math.random() * Math.max(0.01, failSectorSize - 2 * pad);
         }
 
-        // Абсолютный целевой угол стрелки на канвасе
         const targetCanvasAngle = topAngle + targetOffset;
-
-        // Текущий угол стрелки, приведенный к диапазону [0, 2PI)
         const currentNorm = ((upgraderState.arrowAngle % (2 * Math.PI)) + (2 * Math.PI)) % (2 * Math.PI);
         const targetNorm = ((targetCanvasAngle % (2 * Math.PI)) + (2 * Math.PI)) % (2 * Math.PI);
 
-        // Угловое расстояние строго вперед по часовой стрелке до targetNorm
         let deltaForward = targetNorm - currentNorm;
         if (deltaForward <= 0.05) {
             deltaForward += 2 * Math.PI;
         }
 
-        // 4-5 полных оборотов плюс точный доворот
         const fullSpins = 4 + Math.floor(Math.random() * 2);
         const totalRotation = (fullSpins * 2 * Math.PI) + deltaForward;
 
@@ -3690,11 +3739,9 @@
                 upgraderState.isSpinning = false;
                 if (btn) btn.disabled = false;
 
-                // Устанавливаем точный финальный угол стрелки
                 upgraderState.arrowAngle = startAngle + totalRotation;
                 drawUpgraderWheel();
 
-                // 100% честная верификация по фактическому положению стрелки
                 const finalOffset = ((upgraderState.arrowAngle - topAngle) % (2 * Math.PI) + (2 * Math.PI)) % (2 * Math.PI);
                 const actualWin = finalOffset <= winAngle;
 
@@ -4183,15 +4230,14 @@
         const countBadge = document.getElementById('cratesCountBadge');
         if (countBadge) countBadge.innerText = `${cratesList.length} шт.`;
 
-        // Рендер активного выбранного кейса
         let activeCrate = null;
         let isInvCrate = false;
 
         if (activeCrateId.startsWith('inv_crate_')) {
             const unitId = parseInt(activeCrateId.replace('inv_crate_', ''), 10);
             const unit = catalogItems.find(u => u.id === unitId);
-            const invEntry = userInventory.find(i => i.unitId === unitId && i.qty > 0);
-            if (unit && invEntry) {
+            const invEntry = userInventory.find(i => i.unitId === unitId);
+            if (unit) {
                 isInvCrate = true;
                 activeCrate = {
                     id: activeCrateId,
@@ -4249,7 +4295,6 @@
             }
         }
 
-        // Рендер сетки официальных кейсов
         if (grid) {
             grid.innerHTML = cratesList.map(c => `
                 <div onclick="selectActiveCrate('${c.id}')" class="p-3 rounded-2xl bg-dark-950 border ${c.id === activeCrateId ? 'border-amber-500 shadow-md shadow-amber-500/10' : 'border-dark-border'} hover:border-amber-400/80 cursor-pointer unit-card-hover transition flex items-center justify-between gap-3 group">
@@ -4265,7 +4310,6 @@
             `).join('');
         }
 
-        // Рендер сетки кейсов из инвентаря игрока (редкость CRATE)
         const playerGrid = document.getElementById('playerInvCratesGrid');
         const invCratesBadge = document.getElementById('invCratesCountBadge');
         const myCrates = userInventory.map(item => {
@@ -4356,7 +4400,6 @@
             return showToast("В этом кейсе не настроены дропы персонажей!", "warn");
         }
 
-        // Списание средств / кейса
         if (isInventoryCrate) {
             const invIdx = userInventory.findIndex(i => i.unitId === invUnitId);
             userInventory[invIdx].qty -= count;
@@ -4374,7 +4417,6 @@
             if (won) wonUnits.push(won);
         }
 
-        // Массовое открытие x5 / x10
         if (count > 1) {
             wonUnits.forEach(won => {
                 const ex = userInventory.find(i => i.unitId === won.id);
@@ -4397,7 +4439,6 @@
             return;
         }
 
-        // Одиночное открытие с плавной рулеткой
         isRouletteSpinning = true;
         ['spinCrateBtn1', 'spinCrateBtn5', 'spinCrateBtn10'].forEach(id => {
             const btn = document.getElementById(id);
@@ -4427,9 +4468,16 @@
             </div>
         `).join('');
 
-        const cardWidth = 104; // 96px карточка + 8px gap
-        const randomCardOffset = (Math.random() - 0.5) * 65;
-        const targetX = -(36 * cardWidth) + (window.innerWidth < 640 ? 120 : 360) + randomCardOffset;
+        const container = track.parentElement;
+        const containerCenter = container.clientWidth / 2;
+        const cardWidth = 96;
+        const gap = 8;
+        const cardStep = cardWidth + gap;
+        const targetIndex = 36;
+        const trackPaddingLeft = 16;
+        const targetCardCenter = trackPaddingLeft + (targetIndex * cardStep) + (cardWidth / 2);
+        const randomCardOffset = (Math.random() - 0.5) * 50;
+        const targetX = containerCenter - targetCardCenter + randomCardOffset;
 
         requestAnimationFrame(() => {
             track.style.transition = 'transform 4.8s cubic-bezier(0.12, 0.8, 0.2, 1)';
@@ -4443,7 +4491,6 @@
                 if (btn) btn.disabled = false;
             });
 
-            // Добавление выигранного юнита
             const ex = userInventory.find(i => i.unitId === wonUnit.id);
             if (ex) ex.qty++;
             else userInventory.push({ unitId: wonUnit.id, qty: 1 });
@@ -4451,13 +4498,7 @@
             renderInventory();
             renderCratesView();
 
-            const wonBanner = document.getElementById('crateWonBanner');
-            document.getElementById('crateWonImg').src = wonUnit.img;
-            document.getElementById('crateWonName').innerText = wonUnit.name;
-            const rEl = document.getElementById('crateWonRarity');
-            rEl.innerText = wonUnit.rarity;
-            rEl.className = `text-[10px] font-mono font-bold text-rarity-${wonUnit.rarity}`;
-            if (wonBanner) wonBanner.classList.remove('hidden');
+            openCrateResultModal(wonUnit);
 
             addDropToLiveTicker({
                 user: currentUserNick,
@@ -4470,6 +4511,21 @@
 
             showToast(`🎉 Вы выиграли: ${wonUnit.name}!`, "success");
         }, 4900);
+    };
+
+    window.openCrateResultModal = function(unit) {
+        const modal = document.getElementById('crateResultModal');
+        const img = document.getElementById('crateResultImg');
+        const name = document.getElementById('crateResultUnitName');
+        if (img) img.src = unit.img;
+        if (name) {
+            name.innerHTML = `<span class="text-white font-bold">${unit.name}</span> <span class="text-xs font-mono font-bold text-rarity-${unit.rarity}">(${unit.rarity})</span>`;
+        }
+        if (modal) modal.classList.remove('hidden');
+    };
+
+    window.closeCrateResultModal = function() {
+        document.getElementById('crateResultModal')?.classList.add('hidden');
     };
 
     window.openMultiCrateWonModal = function(units) {
@@ -5319,7 +5375,6 @@
         if (tab === 'players') renderAdminPlayersList();
     };
 
-    // Таблица в админке: строго от Basic до Crate
     window.renderAdminItemsTable = function() {
         const tbody = document.getElementById('adminItemsTableBody');
         if (!tbody) return;
@@ -5404,70 +5459,4 @@
         const cratesGrid = document.getElementById('homeFeaturedCratesGrid');
         if (cratesGrid) {
             cratesGrid.innerHTML = cratesList.slice(0, 3).map(c => `
-                <div onclick="selectActiveCrate('${c.id}'); switchMainTab('crates');" class="p-3 rounded-2xl bg-dark-950 border border-dark-border hover:border-amber-400 cursor-pointer unit-card-hover transition flex items-center gap-3">
-                    <img src="${c.img}" class="w-12 h-12 rounded-xl bg-dark-900 border border-dark-border p-1 object-contain shrink-0">
-                    <div class="truncate">
-                        <h4 class="text-xs sm:text-sm font-bold text-white truncate">${c.name}</h4>
-                        <span class="text-[11px] font-mono font-bold text-amber-400">${c.mode === 'free' ? 'Бесплатно' : `${c.costValue} Val`}</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        const topGrid = document.getElementById('homeFeaturedUnitsGrid');
-        if (topGrid) {
-            const topUnits = [...catalogItems].sort((a, b) => (b.value || 0) - (a.value || 0)).slice(0, 6);
-            topGrid.innerHTML = topUnits.map(u => `
-                <div onclick="switchMainTab('catalog')" class="p-2.5 rounded-2xl bg-dark-950 border border-rarity-${u.rarity} hover:border-blue-500 cursor-pointer unit-card-hover transition text-center flex flex-col justify-between">
-                    <div class="w-full aspect-square rounded-xl bg-dark-900 p-1 flex items-center justify-center mb-1 overflow-hidden">
-                        <img src="${u.img}" class="max-h-full max-w-full object-contain">
-                    </div>
-                    <div>
-                        <span class="text-xs font-bold text-white block truncate">${u.name}</span>
-                        <span class="text-[11px] font-mono font-black text-cyan-400">${(u.value || 0).toLocaleString()} Val</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-    };
-
-    window.onload = function() {
-        if (window.Telegram?.WebApp) {
-            window.Telegram.WebApp.ready();
-            window.Telegram.WebApp.expand();
-            const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
-            if (tgUser) {
-                if (tgUser.username) telegramUserTag = `@${tgUser.username}`;
-                if (tgUser.first_name && currentUserNick === "Malez") {
-                    currentUserNick = tgUser.first_name;
-                    try { localStorage.setItem('ctd_user_nick', currentUserNick); } catch(e) {}
-                }
-            }
-        }
-
-        const nickEl = document.getElementById('headerUserNick');
-        if (nickEl) nickEl.innerText = currentUserNick;
-        const targetNick = document.getElementById('adminTargetPlayerNick');
-        if (targetNick) targetNick.innerText = currentUserNick;
-
-        setTheme(currentTheme);
-        updateLanguageUI();
-        updateBalanceDisplays();
-        updateAdminUIState();
-        applyFilters();
-        updateStats();
-        renderLiveTicker();
-        renderHomeWidgets();
-        initFirebase();
-
-        const webhookInput = document.getElementById('discordWebhookInput');
-        if (webhookInput) webhookInput.value = discordWebhookUrl;
-        const discordBadge = document.getElementById('discordStatusBadge');
-        if (discordBadge && discordWebhookUrl) {
-            discordBadge.innerText = "Подключен 🟢";
-            discordBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
-        }
-    };
-</script>
-</body>
-</html>
+                <div onclick="selectActiveCrate('${c.id}'); switchMainTab('crates');" class="p-3 rounded-2xl bg-dark-950 border border-dark-border hover:border-
